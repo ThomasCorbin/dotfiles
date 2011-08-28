@@ -1,0 +1,20 @@
+#
+# Subfunction needed by `repeat'.
+#
+#  This version gotten from bash source code, called "seq" there.
+#
+range ()
+{
+    local lower upper output;
+    lower=$1 upper=$2;
+    if [ $lower -gt $upper ]; then
+#	echo "Lower <${lower}> should be less than uppper <${upper}>."
+        return 1
+    fi
+    while [ $lower -le $upper ];
+    do
+        output="$output $lower";
+        lower=$[ $lower + 1 ];
+    done;
+    echo $output
+}

@@ -1,0 +1,7 @@
+#
+#   psg command.
+#
+function psg()
+{
+    ps ax | egrep -e "$1|PID" | grep -v grep;
+}

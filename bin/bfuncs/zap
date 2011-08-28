@@ -1,0 +1,51 @@
+#
+# This is a little like `zap' from Kernighan and Pike
+#
+#pskill()
+#{
+#        local pid
+#
+#        pid=$(ps -ax | grep $1 | grep -v grep | awk '{ print $1 }')
+#        echo -n "killing $1 (process $pid)..."
+#        kill -9 $pid
+#        echo "slaughtered."
+#}
+#
+#
+# This is a little like `zap' from Kernighan and Pike
+#
+zap()
+{
+    local pid killfile proc
+    if [ $# -lt 1 -o $# -gt 2 ]; then
+	echo "Usage: $0 [signal] string"
+	return 1
+    fi
+
+    #  Get the signal number
+    if [ $# -eq 2 ]; then
+        SIGNAL="${1}"
+        shift
+    else
+        SIGNAL="-TERM"
+    fi
+    export SIGNAL
+
+    killfile=/tmp/killfile.$RANDOM
+    trap 'rm -f $killfile' 0 1 2 15     # clean up files 
+
+    ps ax | grep $1 | egrep -v '(grep|pskill)' >> $killfile
+    for i in $(range 1 $(cat $killfile | wc -l ))
+    do
+	proc=$(sed -n ${i}p $killfile)
+	pid=$(echo $proc | awk '{print $1}')
+        echo -n "killing $(echo $proc | awk '{print $5}') (process $pid)..."
+        kill $SIGNAL $pid
+        if [ $? -eq 0 ]; then
+            echo "signaled."
+        else
+	    echo "failed."
+        fi
+    done
+    rm -f $killfile
+}

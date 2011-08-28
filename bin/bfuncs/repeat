@@ -1,0 +1,14 @@
+#
+# "repeat" command.  Like:
+#
+#       repeat 10 echo foo
+#
+repeat ()
+{
+    local count="$1" i;
+    shift;
+    for i in $(range 1 "$count");
+    do
+        eval "$@";
+    done
+}

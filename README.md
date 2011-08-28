@@ -1,8 +1,4 @@
-###################
-#
 # Tom Corbin's Dotfiles
-#
-######################
 
 These are my config files.
 ------------
@@ -14,11 +10,12 @@ These are my config files.
 Installation
 ----------
 
-git clone git://github.com/ryanb/dotfiles ~/.dotfiles
+1. git clone git@github.com:ThomasCorbin/dotfiles.git
 
-cd ~/.dotfiles
+1. cd ~/.dotfiles
 
-rake install
+1. rake install
+
 
 Environment
 -----------

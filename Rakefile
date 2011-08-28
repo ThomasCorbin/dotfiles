@@ -53,3 +53,11 @@ def link_file(file)
     system %Q{ln -s "$PWD/#{file}" "$HOME/.#{file}"}
   end
 end
+
+desc "convert the README.md file to html"
+task :markdown do
+  require 'redcarpet'
+  markdown = Redcarpet.new( File.new( 'README.md' ).read )
+  puts markdown.to_html
+end
+

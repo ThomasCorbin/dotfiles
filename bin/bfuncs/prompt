@@ -1,0 +1,94 @@
+
+prompt()
+{
+    # set -x
+    ColorPrompt=$1
+
+    case $ColorPrompt in
+
+    blue)
+        GRAD1='\333\262\261\260'
+        GRAD2='\260\261\262\333'
+        COLOR1='\033[01;34;01m'
+        COLOR2='\033[01;37;44m'
+        COLOR3='\033[00;34;40m'
+        COLOR4='\033[00;34;40m'
+        COLOR5='\033[01;01;34m'
+        COLOR6='\033[01;37;40m'
+        GRAD0='\033[00m'
+        PS1=\$COLOR1\$GRAD1\$COLOR2'\u@\h'\$COLOR4\$GRAD1\$COLOR6' \d \$(date +%I:%M:%S%P) '\$NONE'\n'\$COLOR5'\w/'\$GRAD0' '
+        PS2=\$COLOR1\$GRAD1\$COLOR3\$GRAD2\$COLOR4\$GRAD1\$COLOR5'>'\$GRAD0' '
+        echo -e "Your prompt is now blue!"
+    ;;
+
+    red)
+        PS1='\\033[1;31;41m\\333\\262\\261\\260\\033[1;37;41m\\u@\\h\033[0;31;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;31;40m\\w/\\033[00m '
+        PS2='\\033[0;31;40m\\333\\262\\261\\260>\\033[00m '
+        echo -e "Your prompt is now red!"
+    ;;
+
+    yellow)
+        PS1='\\033[1;33;43m\\333\\262\\261\\260\\033[1;37;43m\\u@\\h\\033[0;33;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;33;40m\\w/\\033[00m '
+        PS2='\\033[0;33;40m\\333\\262\\261\\260>\\033[00m '
+        echo -e "Your prompt is now yellow!"
+    ;;
+
+    green)
+        PS1='\\033[1;32;42m\\333\\262\\261\\260\\033[1;37;42m\\u@\\h\033[0;32;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;32;40m\\w/\\033[00m '
+        PS2='\\033[0;32;40m\\333\\262\\261\\260>\\033[00m '
+        echo -e "Your prompt is now green!"
+    ;;
+
+    cyan)
+        PS1='\\033[1;36;46m\\333\\262\\261\\260\\033[1;37;46m\\u@\\h\\033[0;36;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;36;40m\\w/\\033[00m '
+        PS2='\\033[0;36;40m\\333\\262\\261\\260>\\033[00m '
+        echo -e "Your prompt is now cyan!"
+    ;;
+
+    white)
+        PS1='\\033[1;37;47m\\333\\262\\261\\260\\033[1;37;47m\\u@\h\033[0;37;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;37;40m\\w/\\033[00m '
+        PS2='\\033[0;37;40m\\333\\262\\261\\260>\033[00m '
+        echo -e "Your prompt is now white!"
+    ;;
+
+    magenta)
+        PS1='\\033[1;35;45m\\333\\262\\261\\260\\033[1;37;45m\\u@\\h\\033[0;35;40m\\333\\262\\261\\260\\033[1;37;40m \\d \$(date +%I:%M:%S%P) \\n\\033[1;35;40m\\w/\\033[00m '
+        PS2='\\033[0;35;40m\\333\\262\\261\\260>\\033[00m '
+        echo -e "Your prompt is now magenta!"
+    ;;
+
+
+    fire)
+        GRAD1='\333\262\261\260'
+        GRAD2='\260\261\262\333'
+        COLOR1='\033[01;33;43m'
+        COLOR2='\033[01;37;43m'
+        COLOR3='\033[00;31;43m'
+        COLOR4='\033[00;31;40m'
+        COLOR5='\033[01;33;40m'
+        COLOR6='\033[01;37;40m'
+        GRAD0='\033[00m'
+        PS1=\$COLOR1\$GRAD1\$COLOR2'\u@\h'\$COLOR3\$GRAD2\$COLOR4\$GRAD1\$COLOR6' \d \$(date +%I:%M:%S%P) '\$NONE'\n'\$COLOR5'\w/'\$GRAD0' '
+        PS2=\$COLOR1\$GRAD1\$COLOR3\$GRAD2\$COLOR4\$GRAD1\$COLOR5'>'\$GRAD0' '
+        echo -e "Your prompt is now yellow and red!"
+    ;;
+
+
+    elite2)
+        GRAD1=\`tty|cut -d\/ -f3\`
+        COLOR1='[0;36m'
+        COLOR2='[1;36m'
+        COLOR3='[1;30m'
+        COLOR4='[0m'
+        PS1='\[\$COLOR3\]Ú\[\$COLOR1\]Ä\[\$COLOR2\](\[\$COLOR1\]\u\[\$COLOR3\]@\[\$COLOR1\]\\h\[\$COLOR2\])\[\$COLOR1\]Ä\[\$COLOR2\](\[\$COLOR1\]\#\[\$COLOR3\]/\[\$COLOR1\]\$GRAD1\[\$COLOR2\])\[\$COLOR1\]Ä\[\$COLOR2\](\[\$COLOR1\]\$(date +%I:%M%P)\[\$COLOR3\]:\[\$COLOR1\]\$(date +%m/%d/%y)\[\$COLOR2\])\[\$COLOR1\]Ä\[\$COLOR3\]-\[\$COLOR4\]\n\[\$COLOR3\]À\[\$COLOR1\]Ä\[\$COLOR2\](\[\$COLOR1\]\$\[\$COLOR3\]:\[\$COLOR1\]\w\[\$COLOR2\])\[\$COLOR1\]Ä\[\$COLOR3\]-\[\$COLOR4\] '
+        export PS2='\[\$COLOR2\]Ä\[\$COLOR1\]Ä\[\$COLOR3\]-\[\$COLOR4\] '
+        echo -e "Your prompt is now elite version 2!"
+    ;;
+
+
+    *)
+        echo -e "you need to enter an option \n(fire, white, yellow, red, cyan, magenta, green, blue, elite, elite2, or off)"
+    ;;
+
+    esac
+}
