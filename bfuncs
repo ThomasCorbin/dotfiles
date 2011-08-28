@@ -1,0 +1,346 @@
+# Contributed by Noah Friedman and Roland McGrath.
+
+# To be run by the PROMPT_COMMAND variable, so that one can see what
+# the exit status of processes are.
+
+function check_exit_status()
+{
+ local status="$?"
+ local signal=""
+
+    if [ ${status} -ne 0 -a ${status} != 128 ]; then
+       # If process exited by a signal, determine name of signal.
+       if [ ${status} -gt 128 ]; then
+          signal="$(builtin kill -l $((${status} - 128)) 2>/dev/null)"
+          if [ "$signal" ]; then signal="($signal)"; fi
+       fi
+       echo "[Exit ${status} ${signal}]" 1>&2
+    fi
+    return 0
+}
+
+#PROMPT_COMMAND=check_exit_status
+
+inpath()
+{
+    path_to_split=$PATH
+
+    if [ $# -eq 1 ]; then
+        path_to_split=$1
+    fi
+
+    path=$(echo $path_to_split | sed 's/^:/.:/
+                            s/::/:.:/g
+                            s/:$/:./
+                            s/:/ /g')
+
+    for x in $path
+    do
+            [ -x $x/$2 ] && { PROG=$x/$2; break; }
+    done
+    # echo $path
+    [ -z "$PROG" ]
+    return
+}
+
+prpathXXX()
+{
+    path_to_split=$PATH
+
+    if [ $# -eq 1 ]; then
+        path_to_split=$1
+    fi
+
+    path=$(echo $path_to_split | sed 's/^:/.:/
+                                s/::/:.:/g
+                                s/:$/:./
+                                s/:/ /g')
+
+    for x in $path
+    do
+        echo $x
+    done
+}
+
+
+
+# list the directories in a directory
+function dirlist()
+{
+    ls -CF1 $1 | grep  '/' | sed -e 's^/^^'
+}
+
+
+
+#
+#    Put something on the title bar.
+#
+xtitle()
+{
+#    echo -n -e "\033]l$*\033"
+    echo -n -e "]2;$*"
+}
+
+#
+#  Check the spelling of one word.
+#
+spellit()
+{
+    echo $1 | ispell -a
+}
+
+sub()
+{
+    ls -F $1 | grep /$
+}
+
+#
+#    Put something out for the icon name.
+#
+icontitle()
+{
+    echo -n -e "]1;$*"
+}
+
+
+#
+#    Turn on the title bar stuff for prompts.
+#
+dotitles()
+{
+    #  This is set up for fvwm2 - don't show the whole path.
+    #export PROMPT_COMMAND='here=$(basename ${PWD});
+    #xtitle DBEnv: $DBENV - ${HOST}/${USER} - ${here};
+    #icontitle "${HOST}/$USER - ${here}"'
+#    export PROMPT_COMMAND='here=$(basename "${PWD}");
+    xtitle ${S6_CUST}/${S6_APP} - ${here} - ${USER}/${HOST};
+    # icontitle "${here} - ${USER}/${HOST}"'
+}
+
+setTitle()
+{
+    unset PROMPT_COMMAND
+    xtitle $1
+}
+
+
+#
+#   trm
+#
+function trm()
+{
+    if [ "$*" = "" ];
+    then
+        echo "Must give a terminal type."
+        return 1;
+    fi
+    TERM=$*;
+    TERMCAP=""
+    eval `tset -s -Q`
+#   eval `tset -s -Q$TERM`
+}
+
+#
+# An almost ksh-compatible `autoload'.  A function declared as `autoload' will
+# be read in from a file the same name as the function found by searching the
+# $FPATH (which works the same as $PATH), then that definition will be run.
+#
+# To do this without source support, we define a dummy function that, when
+# executed, will load the file (thereby re-defining the function), then
+# execute that newly-redefined function with the original arguments.
+#
+# It's not identical to ksh because ksh apparently does lazy evaluation
+# and looks for the file to load from only when the function is referenced.
+# This one requires that the file exist when the function is declared as
+# `autoload'.
+#
+# usage: autoload func [func...]
+#
+# The first cut of this was by Bill Trost, trost@reed.bitnet
+#
+# Chet Ramey
+# chet@ins.CWRU.Edu
+
+#
+# Declare a function ($1) to be autoloaded from a file ($2) when it is first
+# called.  This defines a `temporary' function that will `.' the file
+# containg the real function definition, then execute that new definition with
+# the arguments given to this `fake' function.  The autoload function defined
+# by the file and the file itself *must* be named identically.
+#
+aload()
+{
+    if [ $# = 1 ]; then
+        source=~/bin/bash/$1.bash
+    else
+        source=$2
+    fi
+
+    eval $1 '() {  . '$source' ; '$1' "$@" ; return $?; }'
+}
+
+#
+# Search $FPATH for a file the same name as the function given as $1, and
+# autoload the function from that file.  There is no default $FPATH.
+#
+autoload()
+{
+        #
+        # Save the list of functions; we're going to blow away the arguments
+        # in a second.  If any of the names contain white space, TFB.
+        #
+
+        local args="$*"
+
+        #
+        # This should, I think, list the functions marked as autoload and not
+        # yet defined, but we don't have enough information to do that here.
+        #
+        if [ $# -eq 0 ] ; then
+                echo "usage: autoload function [function...]"
+                return 1
+        fi
+
+        #
+        # If there is no $FPATH, there is no work to be done
+        #
+
+        if [ -z "$FPATH" ] ; then
+                echo autoload: FPATH not set
+                return 1
+        fi
+
+        #
+        # This treats FPATH exactly like PATH: a null field anywhere in the
+        # FPATH is treated the same as the current directory.
+        #
+        # The path splitting command is taken from Kernighan and Pike
+        #
+
+        fp=$(echo $FPATH | sed 's/^:/.:/
+                                s/::/:.:/g
+                                s/:$/:./
+                                s/:/ /g')
+
+        for FUNC in $args ; do
+                #
+                # We're blowing away the arguments to autoload here...
+                # We have to; there are no arrays.
+                #
+                set $fp
+
+                while [ $# -ne 0 ] ; do
+#                       echo "looking for $1/$FUNC"
+                        if [ -f $1/$FUNC ] ; then
+                                break                   # found it!
+                        fi
+                        shift
+                done
+
+                if [ $# -eq 0 ] ; then
+                        echo "autoload: $FUNC function not found"
+                        continue
+                fi
+
+#               echo auto-loading $FUNC from $1/$FUNC
+                aload $FUNC $1/$FUNC
+        done
+
+        return 0
+}
+
+#autoload errno signal catpic range psg whence whatis rcsmove
+#autoload pskill rot13 repeat setenv unsetenv chdir
+#autoload  range psg whence whatis rcsmove
+#autoload  pskill rot13 repeat setenv unsetenv zap
+autoload range psg whence whatis pskill rot13 repeat zap
+
+####
+####        The following alias for CD is meant to enable the user
+####        to be able to do this:
+####            cd nrg nrgweb
+####
+####        and what would happen is that if you are in:
+####            /home/tc/dev/sam/nrg/src
+####
+####        you'd end up in:
+####            /home/tc/dev/sam/nrgweb/src
+####
+####        but this alias prevented the ability of rvm
+####        to set their own alias for cd so that rvm
+####        could set project specific ruby versions
+####        on entering a directory.
+####
+
+# cd()
+# {
+#         case $# in
+#         0)      builtin cd "$HOME"
+#                 ;;
+#         1)      builtin cd "$@"
+#                 ;;
+#         2)      old="$1"
+#                 new="$2"
+#                 dir=$(echo "$PWD" | sed "s:$old:$new:g")
+#                 case "$dir" in
+#                 "$PWD") echo "bash: cd: bad substitution" >&2
+#                         ;;
+#                 *)      echo "$dir"
+#                         builtin cd "$dir"
+#                         ;;
+#                 esac
+#                 ;;
+#         *)      echo "cd: wrong arg count" >&2
+#                 ;;
+#         esac
+# }
+
+pd()
+{
+        case $# in
+        0)      builtin pushd
+                ;;
+        1)      builtin pushd "$@"
+                ;;
+        2)      old="$1"
+                new="$2"
+                dir=$(echo "$PWD" | sed "s:$old:$new:g")
+                case "$dir" in
+                "$PWD") echo "bash: cd: bad substitution" >&2
+                        ;;
+                *)      echo "$dir"
+                        builtin pushd "$dir"
+                        ;;
+                esac
+                ;;
+        *)      echo "cd: wrong arg count" >&2
+                ;;
+        esac
+}
+
+
+
+function go
+{
+    export GO_SHELL_SCRIPT=$HOME/.__tmp_go.sh
+    ~/bin/go-base $@
+    if [ -f $GO_SHELL_SCRIPT ] ; then
+        source $GO_SHELL_SCRIPT
+    fi
+}
+
+
+function set545
+{
+    export CLASSPATH=$(~/dev/sam/nrgWeb-5.4.5/buildVendorClassPath)
+}
+
+
+# ad is for *alias directory*. It creates persistent
+# aliases. Type 'ad -h' for help.
+function ad
+{
+    ~/.tidbits/lib/aliasdir.rb $@
+    eval `~/.tidbits/lib/aliasdir.rb --dump`
+}
+eval `~/.tidbits/lib/aliasdir.rb --dump`
