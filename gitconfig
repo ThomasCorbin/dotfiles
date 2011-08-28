@@ -1,0 +1,42 @@
+
+[alias]
+      st = status
+      di = diff
+      co = checkout
+      ci = commit
+      br = branch
+      sta = stash
+      chp = cherry-pick
+
+[color]
+   branch = auto
+#   diff   = auto
+   status = auto
+   ui     = auto
+[color "branch"]
+   current = yellow reverse
+   local = yellow
+   remote = green
+[color "diff"]
+   meta = yellow bold
+   frag = magenta bold
+   old = red bold
+   new = green bold
+[color "status"]
+   added = yellow
+   changed = green
+   untracked = cyan
+
+[merge]
+	tool = kdiff3
+[user]
+	email = thomas.corbin@gmail.com
+	name = Thomas Corbin
+[giggle]
+	compact-mode = false
+	main-window-maximized = false
+	main-window-geometry = 1168x603+262+91
+[core]
+	editor = vi
+[diff]
+	renamelimit = 400
