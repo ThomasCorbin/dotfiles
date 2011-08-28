@@ -3,13 +3,23 @@
 # User specific aliases and functions
 source /etc/bash_completion.d/git
 
+#----------------------------------------
+#    Skip loading functions and aliases if not an interactive shell
+#----------------------------------------
+PATH=$HOME/bin:/usr/bin:/bin:/etc
+#PATH=$HOME/bin:/usr/ucb:/usr/bin:/bin:/etc
+export HOST=$(hostname)
+export USER=$(whoami)
+
+
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 rvm list
 which ruby
 
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
-        . /etc/bashrc
+    . /etc/bashrc
 fi
 
 if [ ! -x /bin/arch ]; then
@@ -22,18 +32,9 @@ fi
 #----------------------------------------
 #    Mono related paths
 #----------------------------------------
-export MONO_PATH=~/misc/mono/lib
-export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/opt/gnome/lib/pkgconfig:/usr/local/lib/pkgconfig
+# export MONO_PATH=~/misc/mono/lib
+# export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/opt/gnome/lib/pkgconfig:/usr/local/lib/pkgconfig
 
-
-
-#----------------------------------------
-#    Skip loading functions and aliases if not an interactive shell
-#----------------------------------------
-PATH=$HOME/bin:/usr/bin:/bin:/etc
-#PATH=$HOME/bin:/usr/ucb:/usr/bin:/bin:/etc
-export HOST=$(hostname)
-export USER=$(whoami)
 
 if [ "$PS1" != "" ]; then
     #
@@ -67,26 +68,6 @@ export ARCH=$(arch)
     eval `dircolors`
 #fi
 
-#----------------------------------------
-#    Sybase stuff
-#----------------------------------------
-#export SYBASE=/icl/sybase
-#export SYBROOT=/icl/system10/sybooks
-#export EBTRC=$SYBROOT/sun5m/.ebtrc
-#export DSQUERY=PS
-#export DB_CONFIG=/icl/uis2.0/spow/config/db_config
-#export DEVELOPER=true
-#export DB=demodb
-#export CIG_LOCAL_ICONAREA=true
-#export CIG_LOCAL_SCROLLAREA=true
-
-
-#----------------------------------------
-#   MHNEWS stuff
-#----------------------------------------
-#export MHNEWS_GROUP=comp.os.linux.announce
-#export MHNEWS_SERVER=news.clark.net
-
 
 #----------------------------------------
 #    SamSix stuff
@@ -100,6 +81,7 @@ export S6_DEV_TOP=$HOME/dev/sam/nrg
 export OMS_TOP=$HOME/dev/oms
 export NRG_TOP=$HOME/dev/sam/nrg
 export OMS_DB=omsdb
+export PGDATABASE=nrgdb
 
 #export PGHOST=localhost
 export PGHOST=localhost
@@ -124,7 +106,7 @@ fi
 
 #export PROMPT_COMMAND='PS1="\t \w\n$(git branch 2>/dev/null | grep \* | colrm 1 2) \u@\h > "';
 #export PROMPT_COMMAND="PS1='\t \w\n(__git_ps1 " (%s)") \u@\h > '";
-unset PROMPT_COMMAND
+# unset PROMPT_COMMAND
 
 #... untagged(*) and staged(+) changes
 export GIT_PS1_SHOWDIRTYSTATE=1
@@ -151,42 +133,13 @@ X11_BIN=$X11/bin
 MAIL=/var/spool/mail/tc
 MH_HOME=/usr/bin/mh
 
-PATH="\
-$HOME/bin:\
-$GROOVY_HOME/bin:\
-/bin:\
-/usr/bin:\
-/usr/sbin:\
-/sbin:\
-/opt/google/chrome:\
-"
-
 JAVA_HOME=~/misc/jdk1.6.0
+export JAVA_HOME
 export IDEA_JDK=$JAVA_HOME
 export RUBYMINE_JDK=$JAVA_HOME
-PATH=$JAVA_HOME/bin:$PATH
-
-PATH="\
-$JAVA_HOME/bin:\
-$ANT_HOME/bin:\
-$HOME/bin:\
-$GROOVY_HOME/bin:\
-$GRADLE_HOME/bin:\
-/usr/local/pgsql/bin:\
-$X11/bin:\
-$HOST_PATH:\
-$OS_PATH:\
-/bin:\
-/usr/bin:\
-/usr/sbin:\
-/sbin:\
-/etc:\
-$LOCAL/bin:\
-$LOCAL/sbin:\
-$LOCAL/kde/bin:\
-."
 export PATH
-PATH=$(echo $PATH | sed -e 's/::/:/g')
+# PATH=$(echo $PATH | sed -e 's/::/:/g')
+PATH=$(ruby ~/.path)
 
 
 
@@ -218,7 +171,6 @@ ulimit -c 0
 umask 2
 
 
-export PGDATABASE=nrgdb
 
 
 CRON_FILE=~/.cron.$HOST.$USER

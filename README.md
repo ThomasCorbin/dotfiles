@@ -15,7 +15,9 @@ Installation
 ----------
 
 git clone git://github.com/ryanb/dotfiles ~/.dotfiles
+
 cd ~/.dotfiles
+
 rake install
 
 Environment

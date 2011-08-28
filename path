@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+home        = ENV['HOME']
+java_home   = ENV['JAVA_HOME']
+groovy_home = ENV['GROOVY_HOME']
+gradle_home = ENV['GRADLE_HOME']
+ant_home    = ENV['ANT_HOME']
+local       = '/usr/local'
+
+  # $X11/bin
+  # $HOST_PATH
+  # $OS_PATH
+
+
+path = <<-EOS
+  #{java_home}/bin
+  #{ant_home}/bin
+  #{home}/bin
+  #{groovy_home}/bin
+  #{gradle_home}/bin
+  /usr/local/pgsql/bin
+  /bin
+  /usr/bin
+  /usr/sbin
+  /sbin
+  /etc
+  #{local}/bin
+  #{local}/sbin
+  #{local}/kde/bin
+  .
+EOS
+
+path    = path.split( "\n" ).map{ |l| l.strip }
+source  = ENV['PATH'].split ":"
+
+# p path
+# puts "=" * 40
+# p source
+
+path.each do |item|
+  next if source.include? item
+  next if item.nil? || item.empty?
+
+  source << item
+end
+
+# puts "=" * 40
+# p source
+
+puts source.join ":"
