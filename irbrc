@@ -1,28 +1,4 @@
 require 'rubygems'
-require 'ap'
-
-#  "object oriented ri"
-#  https://github.com/dadooda/ori
-#
-#  (in irb)>  "foo".ri
-#  (in irb)>  "foo".ri :empty?
-require 'ori'
-#require 'what_methods'
-
-#  adds methods such as 'pluralize', 'camelize', 'underscore'
-#           'dasherize', etc.
-# i = ActiveSupport::Inflector
-# i.ordinalize 3
-# "3rd"
-require 'active_support/inflector'
-
-# require 'action_view'
-# require 'action_view/helpers'
-# h = ActionView::Helpers::TextHelper
-# h.pluralize 3, "new messages"
-# doesn't work.
-# https://github.com/rails/rails/blob/master/actionpack/lib/action_view/helpers/text_helper.rb
-# http://api.rubyonrails.org/classes/ActionView/Helpers/TextHelper.html
 
 
 
@@ -33,8 +9,8 @@ def try_require(what, &block)
   loaded, require_result = false, nil
 
   begin
-    require_result = require what
-    loaded = true
+    require_result  = require what
+    loaded          = true
 
   rescue Exception => ex
     puts "** Unable to require '#{what}'"
@@ -45,6 +21,35 @@ def try_require(what, &block)
 
   require_result
 end
+
+
+# require 'action_view'
+# require 'action_view/helpers'
+# h = ActionView::Helpers::TextHelper
+# h.pluralize 3, "new messages"
+# doesn't work.
+# https://github.com/rails/rails/blob/master/actionpack/lib/action_view/helpers/text_helper.rb
+# http://api.rubyonrails.org/classes/ActionView/Helpers/TextHelper.html
+
+try_require 'ap'
+
+#  "object oriented ri"
+#  https://github.com/dadooda/ori
+#
+#  (in irb)>  "foo".ri
+#  (in irb)>  "foo".ri :empty?
+try_require 'ori'
+#require 'what_methods'
+
+
+
+#  adds methods such as 'pluralize', 'camelize', 'underscore'
+#           'dasherize', etc.
+# i = ActiveSupport::Inflector
+# i.ordinalize 3
+# "3rd"
+try_require 'active_support/inflector'
+
 
 
 #  Wirble pretty prints output and does tab completion on methods.
@@ -69,6 +74,8 @@ end
 #  >lp "foo"
 try_require 'looksee'
 
+try_require 'lolize/auto'
+
 
 # def less
 #   require 'stringio'
@@ -88,6 +95,16 @@ def ls( dir = '.' )
 end
 
 
+def cd( dir = Dir.home )
+  Dir.chdir dir
+end
+
+
+def pwd
+  puts Dir.pwd
+end
+
+
 class Object
   # Return only the methods not present on basic objects
   def interesting_methods
@@ -99,9 +116,9 @@ end
 # detects a rails console, cares about version
 def rails?(*args)
     version = args.first
-    v2 = ($0 == 'irb' && ENV['RAILS_ENV']) 
-    v3 = ($0 == 'script/rails' && Rails.env) 
-    version == 2 ? v2 : version == 3 ? v3 : v2 || v3 
+    v2 = ($0 == 'irb' && ENV['RAILS_ENV'])
+    v3 = ($0 == 'script/rails' && Rails.env)
+    version == 2 ? v2 : version == 3 ? v3 : v2 || v3
 end
 
 # loading rails configuration if it is running as a rails console

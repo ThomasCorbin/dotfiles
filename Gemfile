@@ -1,4 +1,10 @@
 source 'http://rubygems.org'
 
 gem 'redcarpet'
-
+gem 'awesome_print'
+gem 'ori'
+gem 'wirble'
+gem 'hirb'
+gem 'looksee'
+gem 'active_support'
+gem 'lolize'
