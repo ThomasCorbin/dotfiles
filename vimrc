@@ -25,10 +25,10 @@ if has("autocmd")
   " When editing a file, always jump to the last known cursor position.
   " Don't do it when the position is invalid or when inside an event handler
   " (happens when dropping a file on gvim).
-  autocmd BufReadPost *
-    \ if line("'\"") > 0 && line("'\"") <= line("$") |
-    \   exe "normal g`\"" |
-    \ endif
+  " autocmd BufReadPost *
+  "   \ if line("'\"") > 0 && line("'\"") <= line("$") |
+  "   \   exe "normal g`\"" |
+  "   \ endif
 
   augroup END
 
@@ -39,5 +39,5 @@ else
 endif " has("autocmd")
 
 " For Haml
-au! BufRead,BufNewFile *.haml         setfiletype haml
+" au! BufRead,BufNewFile *.haml         setfiletype haml
 
