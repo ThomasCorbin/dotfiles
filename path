@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 
+logit       = false
 home        = ENV['HOME']
 java_home   = ENV['JAVA_HOME']
 groovy_home = ENV['GROOVY_HOME']
 gradle_home = ENV['GRADLE_HOME']
 ant_home    = ENV['ANT_HOME']
 local       = '/usr/local'
+misc        = "#{home}/misc"
 
   # $X11/bin
   # $HOST_PATH
@@ -30,12 +32,18 @@ path = <<-EOS
   .
 EOS
 
+path << "\n#{misc}/Sublime Text 2\n"
+
+
 path    = path.split( "\n" ).map{ |l| l.strip }
 source  = ENV['PATH'].split ":"
 
-# p path
-# puts "=" * 40
-# p source
+
+if logit 
+  p path
+  puts "=" * 40
+  p source
+end
 
 path.each do |item|
   next if source.include? item
@@ -48,3 +56,4 @@ end
 # p source
 
 puts source.join ":"
+
