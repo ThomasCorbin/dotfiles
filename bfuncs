@@ -338,9 +338,9 @@ function set545
 
 # ad is for *alias directory*. It creates persistent
 # aliases. Type 'ad -h' for help.
-function ad
-{
-    ~/.tidbits/lib/aliasdir.rb $@
-    eval `~/.tidbits/lib/aliasdir.rb --dump`
-}
-eval `~/.tidbits/lib/aliasdir.rb --dump`
+# function ad
+# {
+#     ~/.tidbits/lib/aliasdir.rb $@
+#     eval `~/.tidbits/lib/aliasdir.rb --dump`
+# }
+# eval `~/.tidbits/lib/aliasdir.rb --dump`
