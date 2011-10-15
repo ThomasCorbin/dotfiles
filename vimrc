@@ -1,8 +1,40 @@
-:set nu
-:set expandtab
-:set shiftwidth=4
-:set hlsearch
-:set tabstop=4
+set nu!
+set tabstop=4
+set shiftwidth=4 
+set expandtab
+set hlsearch
+set tabstop=4
+set list
+
+set listchars=tab:▸\ ,eol:¬
+
+
+"
+" appearance options
+"
+set bg=dark
+let g:zenburn_high_Contrast = 1
+let g:liquidcarbon_high_contrast = 1
+" let g:molokai_original = 0
+set t_Co=256
+
+colorscheme molokai
+
+if has("gui_running")
+" set default size: 90x35
+    set columns=129
+    set lines=40
+    let g:obviousModeInsertHi = "guibg=Black guifg=White"
+else
+    let g:obviousModeInsertHi = "ctermfg=253 ctermbg=16"
+endif
+
+if has("win32") || has("win64")
+    set gfn=Consolas:h12:cANSI
+endif
+
+
+
 
 nnoremap <silent> <Leader>ml :call AppendModeline()<CR>
 

@@ -85,3 +85,8 @@ alias tback="/usr/5bin/touch -c 01010000"
 
 alias sd='git diff > /tmp/diff.out;vi /tmp/diff.out'
 alias dcom='git svn dcommit 2>&1 | tee /tmp/dcommit.out'
+
+alias lg='lightning'
+alias sub='sublime_text'
+alias st='sublime_text'
+

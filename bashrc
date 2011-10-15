@@ -16,6 +16,7 @@ export USER=$(whoami)
 rvm list
 which ruby
 
+[[ -s "$HOME/.lightning/functions.sh" ]] && source "$HOME/.lightning/functions.sh"
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
