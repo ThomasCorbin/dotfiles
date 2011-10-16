@@ -1,6 +1,6 @@
 require 'rake'
 require 'erb'
-require 'lolize'
+# require 'lolize'
 require_relative 'lib/install_file'
 
 
@@ -34,12 +34,18 @@ task :install do
 
   install_dir 'bin'
   install_dir 'bin/bfuncs'
+  install_dir 'xemacs', true
 end
 
 
-def install_dir( dir )
-  bfuncs = Dir[ "#{dir}/*" ].reject{ |f| File.directory? f }.collect do |s|
-    InstallFile.new( s, File.join( ENV['HOME'], s ) )
+def install_dir( dir, prefix_dir_with_dot = false )
+  bfuncs = Dir[ "#{dir}/*" ].reject{ |f| File.directory? f }.collect do |file|
+    dest_file = file
+
+    dest_file = ".#{file}" if prefix_dir_with_dot
+
+    InstallFile.new( file,
+                     File.join( ENV['HOME'], dest_file ) )
   end
 
 
