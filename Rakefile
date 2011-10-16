@@ -33,13 +33,14 @@ task :install do
   end
 
   install_dir 'bin'
-  install_dir 'bin/bfuncs'
-  install_dir 'xemacs', true
+  # install_dir 'bin/bfuncs'
+  install_dir 'xemacs',     true
+  install_dir 'vim',        true
 end
 
 
 def install_dir( dir, prefix_dir_with_dot = false )
-  bfuncs = Dir[ "#{dir}/*" ].reject{ |f| File.directory? f }.collect do |file|
+  bfuncs = Dir[ "#{dir}/**/*" ].reject{ |f| File.directory? f }.collect do |file|
     dest_file = file
 
     dest_file = ".#{file}" if prefix_dir_with_dot
