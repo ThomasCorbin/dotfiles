@@ -1,0 +1,36 @@
+#!/usr/bin/env groovy
+
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+
+
+def copyToClipboard( text )
+{
+    //
+    //    Get the system clipboard.
+    //
+    def clipboard = Toolkit.getDefaultToolkit().getSystemClipboard()
+
+    //
+    //    Add the text to the clipboard.
+    //
+    clipboard.setContents( new StringSelection( text ), null )
+
+    println "Added text [$text] to system clipboard."
+}
+
+def readStdin()
+{
+    System.in.text
+}
+
+def text = args?.size() ? args[0] : readStdin()
+
+copyToClipboard( text )
+
+//
+//    If you exit, the text doesn't appear in the clipboard,
+//    at least as far as I can tell.
+//
+// sys.exit()
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#        --dry-run \
+#        --perms \
+#        --rsh=/usr/bin/ssh \
+
+rsync -vaz \
+        --stats \
+        --update \
+        --links \
+        --hard-links \
+        --owner \
+        --no-group \
+        --times \
+        --delete \
+        --recursive \
+        /usr/data/sounds \
+        /media/WD\ USB\ 2/data

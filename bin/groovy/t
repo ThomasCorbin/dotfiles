@@ -1,0 +1,13 @@
+#!/usr/bin/env groovy
+
+
+def ant = new AntBuilder()
+def foo = ant.path( id: "foo" )
+{
+    fileset( dir: "test" )
+    {
+        include( name: "**/HelloSpock*" )
+    }
+}
+
+println foo.toString()

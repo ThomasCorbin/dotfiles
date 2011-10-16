@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+#	-*- Mode: python -*-
+
+
+import os
+import sys
+import string
+import posixpath
+
+sys.stderr = sys.stdout
+
+pwd = os.getcwd()
+packageTops = ["com", "java", "javax", "mseries" ]
+
+for ii in packageTops:
+
+    packageDir = ii + "/"
+    packageHead = ii + "."
+    #print "dir %s  head %s" % (packageDir, packageHead )
+
+    try:
+        top = os.environ["TOP"]
+    except:
+        cmd = """
+        pwd | sed -e 's^%s/.*^^' \
+                            -e 's^/%s$^^' \
+                            -e 's^/tmp_mnt^^' \
+                            -e 's^/$^^' 
+        """ % (ii, ii)
+        #print cmd
+        try:
+            cmd = string.replace( cmd, "\n", "" )
+            pwd = os.getcwd()
+            topdex = string.index( pwd, ii )
+            top = pwd[:topdex - 1]
+            # print "top %s" % top
+        except:
+            continue
+
+    try:
+        # find out the package name
+        result = string.split( pwd, packageDir )[1]
+        result = packageDir + string.replace( result, "\.", "/" )
+        
+        print "%s" % result
+        break
+    except:
+        i = 1

@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'find'
+require 'Time'
+require 'rubygems'
+require 'colorize'
+require 'win32/console/ansi'
+
+def diff( first, sedond )
+    seconds = first - second
+
+end
+
+dirs        = ["."]
+excludes    = ["CVS","classes","images","lib","tlds",".metadata","bin","rbps-build-and-deploy"]
+
+for dir in dirs
+  Find.find(dir) do |path|
+    if FileTest.directory?(path)
+      if excludes.include?(File.basename(path))
+        Find.prune       # Don't look any further into this directory.
+      else
+        next
+      end
+    elsif path =~ /\.class/
+      Find.prune       # Don't look any further into this directory.
+    elsif path =~ /\.metadata/
+      Find.prune       # Don't look any further into this directory.
+    else
+        if (File.mtime(path) - Time.parse( '07/04/2011' )) > 0
+            output = path.gsub( "./rbps-core-r1/src/main/java/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-core-r1/src/test/java/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-common-r1/src/main/java/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-lettergen-r1/src/main/java/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-lettergen-r1/src/main/resources/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-lettergen-r1/src/test/java/gov/va/vba/rbps/", "" )
+            output = output.gsub( "./rbps-web-r1/src/main/resources/", "" )
+
+            # p output.colorize( :red )
+            mtime = File.mtime(path).strftime("%m/%d/%Y %H:%M:%S") 
+            puts "#{mtime.colorize :red}    #{output.colorize :green}"
+            # p path
+            # p File.mtime(path)
+        end
+    end
+  end
+end

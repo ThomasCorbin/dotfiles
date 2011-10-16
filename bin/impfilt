@@ -1,0 +1,348 @@
+#!/usr/bin/env ruby
+#    -*- Mode: ruby -*-
+
+require 'getoptlong'
+require 'find'
+require 'ftools'
+
+def usage
+    print <<"END_OF_DATA"
+    #{$0}: --modify --backup <backup extension> --find
+        --modify [-m]                  modify the files
+        --backup [-i] <extension>      use this file extension for backups, 
+                                       defaults to '.bak'
+        --find                         do  a find from the current directory, 
+                                       looking for java files
+END_OF_DATA
+end
+
+class Class
+
+    #
+    #  Create an attr_reader method on the Class class for class atrributes
+    #  attr_reader doesn't work for class attributes, so now we've modified
+    #  the ruby Class class to be able to support this feature so that
+    #  we don't have to write extra, scurrilous methods just to access
+    #  class attributes, when we don't have to for regular attributes.
+    #
+    #  Ain't ruby grand!?!?
+    #
+    def cattr_reader( *cvs )
+        cvs.each do |cv|
+            class_eval %Q{def self.#{cv}; @@#{cv} end}
+      end
+    end
+end
+
+
+#
+#  Test cattr_reader
+#
+#class Foo
+#    @@foo = "Root"
+#    @@bar = 66
+#
+#    cattr_reader :foo, :bar
+#end
+
+#p [Foo.foo, Foo.bar]                   #=> ["Root", 66]
+
+
+class Import
+    attr_reader( :fileName, :lineNumber, :line, :className )
+
+    def initialize( fileName, lineNumber, line, className )
+        @fileName     = fileName
+        @lineNumber   = lineNumber
+        @line         = line
+        @className    = className
+    end
+
+    def to_s
+        "Import: filename: #{@fileName}  lineNum: #{@lineNumber}  line: #{@line}  className: #{@className}\n"
+    end
+
+    def <=>( other )
+        self.lineNumber <=> other.lineNumber
+    end
+end
+
+
+
+class ImportFilter
+
+    @@totalExtraImports = 0
+    @@totalFiles = 0
+    @@totalAffectedFiles = 0
+
+    cattr_reader( :totalExtraImports, :totalFiles, :totalAffectedFiles )
+
+    def initialize( fileName, modify, backup, backupExtension, verbose )
+        @fileName        = fileName
+        @hash            = Hash.new
+        @violations      = Array.new
+        @modify          = modify
+        @verbose         = verbose
+        @backup          = backup
+        @backupExtension = backupExtension
+        @backupName      = @fileName + backupExtension
+        @lineCount       = 1
+        @extraImports    = 0
+
+        @@totalFiles    += 1
+    end
+
+    def process()
+
+        File.open( @fileName ).each do |line|
+
+            next if checkViolation( line )
+
+            filter( line ) if not saveImport( line )
+
+            @lineCount += 1
+        end
+
+        lineList = buildLineList()
+
+        modifyFile( lineList )
+
+        #
+        #  Print the header and then all the results, violations,
+        #  or otherwise.
+        #
+        printHeader()
+        reportViolations()
+        reportResults()
+        printFooter()
+    end
+
+    def filter( line )
+
+        #
+        #  Remove any '//' based comments from this line
+        #
+
+
+        #
+        #  Break the line into separate words and look for things
+        #  that match import statements.
+        #
+        words = line.scan( /\w+/ )
+        words.each do |word|
+            @hash.delete( word )
+        end
+    end
+
+    def saveImport( line )
+        re = /^\s*import\s+(\w*\.)*(\w*)\s*;/
+        match = re.match( line )
+
+        return false if not match
+
+        #
+        #  Get the class name.
+        #
+        className = match[2]
+
+        #
+        #  Got a match, store it away in the hash table.
+        #
+        @hash[className] = Import.new( @fileName, @lineCount, line, className )
+        return true
+    end
+
+
+    def checkViolation( line )
+        re = /^\s*import\s+(\w*\.)*(\*)\s*;/
+        match = re.match( line )
+
+        return false if not match
+
+        #
+        #  Get the class name.
+        #
+        className = match[2]
+
+
+        #
+        #  Make sure this isn't a "*" import
+        #
+        if className == "*"
+            @violations[@violations.length] = Import.new( @fileName,
+                                                          @lineCount,
+                                                          line,
+                                                          className )
+            return true
+        end
+    end
+
+    def printHeader()
+        printf "File: #{@fileName}\n"
+    end
+
+    def printFooter()
+        printf "\n\t%d extra import(s)\n\n", @extraImports
+    end
+
+    def reportViolations()
+
+        #  If there are no "relics" for this file, nothing to report
+        return if @violations.length < 1
+
+        @violations.each do |entry|
+            printf "    VIOLATION -     line:%d    %s",
+                                          entry.lineNumber,
+                                          entry.line
+        end
+    end
+
+
+    def reportResults()
+
+        #  If there are no "relics" for this file, nothing to report
+        return if @hash.length < 1
+
+        #  Ok, this file is affected.
+        @@totalAffectedFiles += 1
+        @@totalExtraImports += @hash.length
+
+        @extraImports = @hash.length
+
+        list = Array.new
+        @hash.each do |key, value|
+            list.push( value )
+        end
+
+        list.sort!()
+
+        list.each do |entry|
+            printf "    line:%d    %s", entry.lineNumber, entry.line
+        end
+
+    end
+
+    def buildLineList()
+
+        list = []
+        @hash.each do |key, value|
+            list.push( value.lineNumber )
+        end
+
+        return list
+    end
+
+    def modifyFile( lineList )
+
+        return if not @modify
+
+        File.copy( @fileName, @backupName )
+
+        lineList.sort!
+        lineList.reverse!
+
+        lineCount = 0
+        marker = lineList.pop()
+
+        output = File.open( @fileName, "w" )
+
+        File.open( @backupName ).each do |line|
+
+            lineCount += 1
+
+            if marker and lineCount == marker
+                marker = lineList.pop()
+
+                if @verbose
+                    print "skipping: #{lineCount} - #{line}"
+                end
+
+                next
+            end
+
+            output.print line
+        end
+
+        if not @backup
+            File.delete( @backupName )
+        end
+    end
+end
+
+
+#  $-i = '.orig'
+
+
+opts = GetoptLong.new(
+    ["--find", "-f", GetoptLong::NO_ARGUMENT],
+    ["--recurse", "-r", GetoptLong::NO_ARGUMENT],
+    ["--modify", "-m", GetoptLong::NO_ARGUMENT],
+    ["--verbose", "-v", GetoptLong::NO_ARGUMENT],
+    ["--backup", "-i", GetoptLong::REQUIRED_ARGUMENT]
+)
+
+
+
+modify              = false
+backup              = false
+backupExtension     = ".bak"
+find                = false
+verbose             = false
+opts.each do |opt, arg|
+    #puts "Option: #{opt} arg: #{arg}"
+
+    case opt
+
+    when "--modify" then
+        modify = true
+
+    when "--verbose" then
+        verbose = true
+
+    when "--find" then
+        find = true
+
+    when "--recurse" then
+        find = true
+
+    when "--backup" then
+        backup = true
+        backupExtension = arg
+    end
+end
+
+if (not modify) and backup
+    print "You cannot choose the '--backup' option w/o also choosing the '--modify' option."
+    usage
+    exit
+end
+
+
+if find
+    Find.find( "." ) do |file|
+
+        next if not file =~ /.*\.java$/
+
+        filter = ImportFilter.new( file,
+                                  modify,
+                                  backup,
+                                  backupExtension,
+                                  verbose )
+        filter.process()
+    end
+end
+
+
+ARGV.each do |fileName|
+    filter = ImportFilter.new( fileName,
+                              modify,
+                              backup,
+                              backupExtension,
+                              verbose )
+    filter.process()
+end
+
+
+printf "Total extra imports: %d\n", ImportFilter.totalExtraImports
+printf "Total affected files: %d\n", ImportFilter.totalAffectedFiles
+printf "Total inspected files: %d\n", ImportFilter.totalFiles

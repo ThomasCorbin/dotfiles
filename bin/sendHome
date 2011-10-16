@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#        --dry-run \
+
+
+#        --exclude=.kde/ \
+#        --exclude=.kde \
+#        --exclude=.ssh/ \
+
+rsync -vaz \
+        --stats \
+        --exclude=.licq/licq_fifo \
+        --exclude=.thumbnails/ \
+        --exclude=.thumbnails \
+        --exclude=.kde/share/cache/ \
+        --exclude=.kde/share/thumbnails/ \
+        --exclude=misc/src/konstruct/ \
+        --exclude=misc/sounds/ \
+        --exclude=misc/images/ \
+        --exclude=misc/rpms/ \
+        --exclude=kde3.2.3/ \
+        --exclude=misc/crossover/support/dotwine/wineserver-laptop/socket \
+        --update \
+        --links \
+        --hard-links \
+        --perms \
+        --owner \
+        --group \
+        --times \
+        --delete \
+        --recursive \
+        --rsh=/usr/bin/ssh \
+        /home/tc \
+        presario:/home
+
+#rsync -vaz \
+#        --stats \
+#        --update \
+#        --links \
+#        --hard-links \
+#        --perms \
+#        --owner \
+#        --group \
+#        --times \
+#        --delete \
+#        --recursive \
+#        --rsh=/usr/bin/ssh \
+#        /usr/data/tc \
+#        hal:/usr/data
+

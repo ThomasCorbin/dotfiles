@@ -1,0 +1,8 @@
+#!/usr/bin/env groovy
+
+import com.samsix.datbase.DbUtils
+import com.samsix.datbase.ConnectionUtils
+
+def connectionUtils = new ConnectionUtils()
+def utils = new DbUtils()
+utils.dumpFile( )

@@ -1,0 +1,388 @@
+#! /bin/sh
+# Tony Tam - 1991
+#
+# calgen - Version 1.0.6 3/2/91
+# generate a calendar in postscript and send the output to the standard output
+#
+# To print it out: "calgen | lpr"
+#
+#Usage: calgen [-g #] [-h] [month] [year]
+#
+#	-h:		for help
+#	-g [0-2]:	graphics to be used in background, 0 for none [0-2]
+#	month:   	month of the calendar (optional) [1-12]
+#	year:		year of the calendar, month has to be set also
+#example:
+#	calgen			; for the current month of the current year
+#       calgen 11		; for November of the current year
+#	calgen -g 1 4 1991	; for April 1991
+#	calgen -g 2 4		; for April of the current year
+#
+#
+print_usage () {
+	echo "" >&2
+	echo "Usage: `basename $0` [-g #] [-h] [month] [year]" >&2
+	echo "" >&2
+	echo "	-h:		for help"
+	echo "	-g [0-2]:	graphics to be used in background, 0 for none [0-2]">&2
+	echo "	month:   	month of the calendar (optional) [1-12]" >& 2
+	echo "	year:		year of the calendar, month has to be set also" >&2
+	echo "example:" >&2
+	echo "	`basename $0`			; for the current month of the current year"
+	echo "	`basename $0` 12		; for December  of the current year"
+	echo "	`basename $0` -g 1 4 1991	; for April 1991"
+	echo "	`basename $0` -g 2 4		; for April of the current year"
+	echo "" >&2
+	exit 1
+}
+
+GRAPHICS="circles_round_round"
+
+case $1 in
+	"-g")	
+		case $2 in
+			0)	GRAPHICS=""
+				;;
+			1)	GRAPHICS="circles_round_round"
+				;;
+			*)	GRAPHICS="sine_curve"	
+				;;
+		esac
+		shift; shift
+		;;
+	"-h")
+		print_usage;
+		;;
+esac
+
+[ $# -gt 2 ] && {
+	print_usage;
+}
+
+
+
+MONTH=${1:-"`date +%m`"}
+YEAR=${2:-"19`date +%y`"}
+
+([ $MONTH -gt 12 ] || [ $MONTH -lt 1 ]) && {
+	echo "`basename $0`: illegal 'month' " >&2
+	print_usage;
+	exit 2
+}
+
+[ "$YEAR" = "" ] && {
+	echo "`basename $0`: illegal 'year' " >&2
+	print_usage;
+	exit 2
+}
+
+#
+# here is where we dive into postscript
+#
+cat <<~~~~
+%!PS-Adobe-1.0
+% Written by Tony Tam - Nothing is copyrighted
+%
+% creates a nice looking calendar with date and month
+%
+
+/end_month [ 31 28 31 30 31 30 31 31 30 31 30 31 ] def
+/month_arr [ (January ${YEAR}) (February ${YEAR}) 
+	     (March ${YEAR}) (April ${YEAR}) (May ${YEAR}) (June ${YEAR}) 
+	     (July ${YEAR}) (August ${YEAR})
+	     (September ${YEAR}) (October ${YEAR}) 
+	     (November ${YEAR}) (December ${YEAR}) ] def
+
+/inch { 72 mul } def
+
+/x_max 8.5 inch   def		% max width of paper
+/y_max 11 inch   def		% max height of paper
+
+
+/dow {				% returns the day of the week
+				% date, month, year
+	/yr exch def
+	/month exch def
+	/date exch def
+	month 2 le { 
+		/month month 12 add def
+		/yr yr 1 sub def
+	} if
+	/n1 month 1 add 26 mul 10 idiv def
+	/n2 125 yr mul 100 idiv def
+	/day date n1 add n2 add yr 100 idiv sub yr 400 idiv add 
+             1 sub cvi 7 mod 1 add def
+} def
+
+1 ${MONTH} ${YEAR} dow
+/start_col day def 			% the column of the 1st of the month
+/end_date end_month ${MONTH} 1 sub get def	% last day of the month
+/month_str month_arr ${MONTH} 1 sub get def 		% need the parentheses
+
+% nice looking curve background curve
+
+/sine_curve
+{
+	gsave
+
+	/sineCurve
+	{
+		72 72 72 -72 288 0 curveto
+	} def
+
+	x_max 2 div .5 inch add y_max 2 div translate
+	.8 .8 scale
+	.99 setgray
+	3 setlinewidth
+	newpath
+	2 {
+		24 {
+		0 0 moveto
+			sineCurve
+			360 24 div rotate
+		} repeat
+		-1.0 1.0 scale
+	} repeat
+	stroke
+
+	1 setgray
+	0 0 10 0 360 arc fill
+	grestore
+} def
+
+
+/circles_round_round {
+%%%% {x-center}{y-center} {radius} circle
+/circle {
+	0 360 arc 
+} def
+
+/xMid x_max 2 div def
+/yMid y_max 2 div def
+
+xMid yMid moveto
+gsave
+/Radius 1 inch def
+/Num 15 def
+/Angle 360 Num div def
+
+.95 setgray
+newpath
+xMid yMid translate
+Num {
+	Radius 0 Radius circle		% draw the circle
+	Angle rotate
+} repeat
+stroke
+closepath
+grestore
+} def				%% circles_round_round
+
+/font				% size, font (set the font)
+{
+    findfont exch scalefont setfont
+} def 
+
+/x_value			% x value given a point
+{
+    pop
+} def
+
+/y_value			% y value given a point
+{
+    exch
+    pop
+} def
+
+/center_text			% string
+{
+	dup
+		currentpoint x_value
+		exch
+			1 setgray
+			10 exch 0 exch ashow
+			0 setgray
+		currentpoint x_value
+		exch
+		sub
+		dup
+		neg
+		0 rmoveto
+		2
+		div
+		neg
+		0
+		rmoveto
+
+	/_str_ exch def
+	currentpoint
+	2 2 neg rmoveto
+	.3 setgray
+	_str_ 10 exch 0 exch ashow
+	0 setgray
+	moveto
+	_str_ 10 exch 0 exch ashow
+} def
+
+/landscape			% change to lanscape mode
+{
+     x_max 0 translate
+     90 rotate
+     x_max 			% save x_max
+     /x_max y_max def
+     /y_max exch def		% set y_max = x_max on stack
+}   def
+
+/box				% draw a box given the corners	
+{
+	/y1 exch def
+	/x1 exch def
+	/y2 exch def
+	/x2 exch def
+
+	newpath
+	x1 y1 moveto
+	x1 y2 lineto
+	x2 y2 lineto
+	x2 y1 lineto
+	closepath
+} def
+
+/fillbox { box gsave fill grestore } def
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LET'S GET STARTED
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+${GRAPHICS}
+
+/min_border {.5 inch .25 inch }  def
+/max_border 
+{
+      x_max .5 inch sub 
+      y_max 1.25 inch sub 
+}  def
+
+landscape
+
+gsave
+min_border translate
+
+/border_y max_border y_value min_border y_value sub  def
+/border_x max_border x_value min_border x_value sub  def
+/hor_dist border_x 7 div  def
+/ver_dist border_y 5 div  def
+
+
+%box and date
+
+/date_show		% date, x, y 
+{
+	  .2 inch sub
+	  exch
+	  .22 inch sub
+	  exch 
+	moveto
+	gsave
+	  1 setgray
+	  3 string cvs show
+	grestore
+} def
+
+gsave
+
+.3 setgray
+
+16 /Times-Roman font
+/_day_ 1 def
+/_y border_y def
+/first_col start_col def
+
+1 1 5 {
+	hor_dist first_col mul hor_dist border_x 
+	{
+	     _day_ end_date le 
+	     {
+		/_x exch def
+		  _x
+		  _y
+		  _x .25 inch sub
+		  _y .25 inch sub
+		fillbox
+		stroke
+
+		_day_ _x _y date_show
+		/_day_ _day_ 1 add def
+	     } if
+	} for
+	/first_col 1 def
+	/_y _y ver_dist sub def
+} for	
+
+0 setgray
+/_y border_y def
+hor_dist 
+hor_dist 
+hor_dist end_date _day_ sub 1 add mul {
+
+		/_x exch def
+		  _x
+		  _y
+		  _x .25 inch sub
+		  _y .25 inch sub
+		fillbox
+		stroke
+
+		_day_ _x _y date_show
+		/_day_ _day_ 1 add def
+} for
+
+grestore
+
+
+% draw header
+18 /Times-Roman font
+gsave
+	gsave
+		0 setgray
+		30 /Times-Roman font
+		border_x 2 div border_y 28 add moveto
+		month_str center_text
+	grestore
+
+	%%% top block
+	   0 border_y 
+	   border_x border_y 24 add
+	box
+	gsave fill grestore
+	stroke
+
+	1 setgray
+	hor_dist 2 div 9 sub border_y 2 add moveto
+	hor_dist 12 sub 0 (SMTWTFS) ashow
+grestore
+      
+
+% vertical grids
+
+1 1 6 {
+     hor_dist mul /__lnStart__ exch def
+     __lnStart__ 0 moveto
+     0 border_y rlineto stroke
+  } for
+
+% horizontal grids
+
+1 1 4 {
+     ver_dist mul /__lnStart__ exch def
+     0 __lnStart__ moveto
+     border_x 0 rlineto stroke
+  } for
+
+grestore
+
+   min_border
+   max_border
+box
+stroke
+
+showpage
+~~~~

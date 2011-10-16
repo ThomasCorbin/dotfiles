@@ -1,0 +1,13 @@
+#!/usr/bin/env groovy
+
+def webSite         = "http://localhost:8084/nrg/app"
+def login = "tc"
+def pword = "aet"
+//def url = "${webSite}/startup?username=${login}&encryptedPassword=${pword}"
+def url = "${webSite}/startup/username/${login}/encryptedPassword/${pword}"
+//def url = "${webSite}/startup"
+
+
+String pageText = url.toURL().text
+println pageText
+

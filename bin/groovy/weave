@@ -1,0 +1,90 @@
+#!/usr/bin/env groovy
+
+import javax.imageio.ImageIO
+import java.awt.image.BufferedImage
+import griffon.builder.gfx.GfxBuilder
+import griffon.builder.gfx.render.GfxRenderer
+import griffon.builder.gfx.CustomGfxNode
+import griffon.builder.gfx.GfxAttribute
+import java.awt.Color
+import griffon.builder.gfx.DrawableNode
+
+/** Original sample provided by Pilho Kim */
+
+class GfxSphereNode extends CustomGfxNode {  
+   @GfxAttribute(alias="r") double radius = 90  
+   @GfxAttribute double cx = 100  
+   @GfxAttribute double cy = 100  
+   @GfxAttribute Color base     = Colors.get("blue")  
+   @GfxAttribute Color ambient  = Colors.get(r: 6,  g: 76,  b: 160, a: 127)  
+   @GfxAttribute Color specular = Colors.get(r: 64, g: 142, b: 203, a: 255)  
+   @GfxAttribute Color shine    = Colors.get("white")  
+   
+   GfxSphereNode() {  
+     super("sphere")  
+   }  
+   
+   DrawableNode createNode(GfxBuilder builder) {  
+     double height = radius * 2  
+     builder.group(borderColor: 'none') {  
+       circle(cx: cx, cy: cy, radius: radius, fill: base)  
+       circle(cx: cx, cy: cy, radius: radius) {  
+         multiPaint {  
+           radialGradient(radius: radius) {  
+             stop(offset: 0.0f, color: ambient)  
+             stop(offset: 1.0f, color: rgba(alpha: 204))  
+           }  
+           radialGradient(cy: cy + (height*0.9),  
+                          fy: cy + (height*1.1)+20,  
+                          radius: radius) {  
+             stop(offset: 0.0f, color: specular)  
+             stop(offset: 0.8f, color: specular.derive(alpha: 0))  
+             transforms{ scale(y: 0.5) }  
+           }  
+           radialGradient(fit: false, fx: 55, fy: 35, radius: height/1.4){  
+             stop(offset: 0.0f, color: shine.derive(alpha:0.5))  
+             stop(offset: 0.5f, color: shine.derive(alpha:0))  
+           }  
+         }  
+       }  
+     }  
+   }  
+}  
+
+//      width and height of image which will be generated
+int w = 250
+int h = 200
+
+GfxRenderer graphicsRenderer = new GfxRenderer()
+image = graphicsRenderer.renderToFile( "/tmp/weave.png", w, h )
+{
+    antialias 'on'
+    rect( x:            20,
+          y:            20,
+          width:        180,
+          height:       160,
+          arcWidth:     50,
+          arcHeight:    50,
+          borderColor:  false )
+    {
+        linearGradient
+        {
+            stop( offset: 0.5, color: 'white' )
+            stop( offset: 1,   color: 'blue' )
+        }
+
+//        filters( offset: 50 )
+//        {
+//            weave()
+//            kaleidoscope( sides: 4 )
+//            shapeBurst( merge: true, type: 'circle up' )
+//            lights()
+//            {
+//                ambientLight( color: color('lime').rgb(),
+//                              centreX: 0,
+//                              centreY: 0 )
+//            }
+//        }
+    }
+}
+

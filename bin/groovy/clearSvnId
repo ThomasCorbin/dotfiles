@@ -1,0 +1,4 @@
+
+find nrgWeb/src -iname \*.groovy | xargs groovy -p -i .bak -e "def Id='\$Id';(line =~ /\\\$Id.*\\\$/).replaceAll( /\\\$Id\\\$/ )"
+
+

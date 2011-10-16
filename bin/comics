@@ -1,0 +1,141 @@
+#!/usr/bin/env python2
+
+#
+#    Make a morning greeting page.
+#
+#    Uses HTMLgen from: http://starship.python.net/lib.html
+#
+
+#
+#    The template for comics at bayarea.com:
+#
+#<IMG SRC="http://www.uclick.com/feature/02/02/12/ad020212.gif">
+
+#
+#/comics/chickweed/archive/images/chickweed20012187920227.gif
+#
+#/comics/chickweed/archive/images/chickweed20182818020226.gif
+
+#http://www.babyblues.com/images/2002/020213.gif
+#
+
+import time
+import HTMLgen
+import tempfile
+import os
+
+#
+#    Get the pieces of the date that will be used to construct
+#    the urls to the comic's images.
+#
+date = time.localtime( time.time() )
+month = "%02d" % date[1]
+year = str( date[0] )[2:]
+day = "%02d" % date[2]
+
+#print date
+#print "month: %s, year: %s, day: %s" % ( month, year, day )
+
+
+pattern = "http://www.uclick.com/feature/%s/%s/%s/%s%s%s%s.gif"
+
+
+#
+#    Build the document header, title, etc.
+#
+doc = HTMLgen.SimpleDocument( title = "My comics" )
+
+doc.append( HTMLgen.Heading( 1,
+                             "Comics for " + time.asctime(),
+                             align = 'center' ) )
+
+#         [ "Kudzu",                   "tmkud" ],
+#         [ "Over The Hedge",          "oh" ],
+
+#
+#    This is the list of comics that we want to look at.
+#
+list = [ [ "Adam",                    "ad" ],
+         [ "Animal Crackers",         "tmani" ],
+         [ "Arlo & Janis",            "aj" ],
+         [ "Baldo",                   "ba" ],
+         [ "Big Picture",             "bi" ],
+         [ "Big Top",                 "bt" ],
+         [ "Born Loser",              "br" ],
+         [ "Born Lucky",              "bol" ],
+         [ "Bound and Gagged",        "tmbou" ],
+         [ "Bottom  Liners",          "tmbot" ],
+         [ "Cats w/hands",            "tmcat" ],
+         [ "Chickweed Lane",          "cw" ],
+         [ "Cleats",                  "cle" ],
+         [ "Compu-toon",              "tmcom" ],
+         [ "Crankshaft",              "cs" ],
+         [ "Duplex",                  "dp" ],
+         [ "Fifth Wave",              "fw" ],
+         [ "For Better or For Worse", "fb" ],
+         [ "Foxtrot",                 "ft" ],
+         [ "Fred Basset",             "tmfba" ],
+         [ "Heart Of The City",       "hc" ],
+         [ "Helen, Sweetheart Net",   "tmhel" ],
+         [ "In the Bleachers",        "bl" ],
+         [ "Lola",                    "tmlol" ],
+         [ "Luann",                   "lu" ],
+         [ "Lucky Cow",               "luc" ],
+         [ "Nine to Five",            "tmntf" ],
+         [ "Non Sequitor",            "nq" ],
+         [ "Overboard",               "ob" ],
+         [ "Pooch Cafe",              "poc" ],
+         [ "Real Life Adventures",    "rl" ],
+         [ "Rose Is Rose",            "pb" ],
+         [ "Rudy Park",               "rk" ],
+         [ "Shirley",                 "sy" ],
+         [ "Shoe",                    "tmsho" ],
+         [ "Stone Soup",              "ss" ],
+         [ "Tank McNamara",           "tm" ],
+         [ "Warped",                  "wp" ],
+         [ "Willy 'n Ethel",          "wes" ],
+         ]
+
+#http://guides.lycos.com/uexpress/data/bb020328.gif
+
+for item in list:
+
+    doc.append( HTMLgen.Heading( 2, item[0] ) )
+
+##    try:
+##        print item[2]
+##    except:
+##        pass
+
+    try:
+        imagePath = item[2] % ( year, month, day )
+    except:
+        imagePath = pattern % ( year, month, day, item[1], year, month, day )
+
+    image = HTMLgen.Image( imagePath, alt = item[0] )
+    doc.append( image )
+
+
+##doc.append( HTMLgen.Heading( 2, "Zits" ) )
+
+##pattern = "http://est.rbma.com/content/Zits?date=20020131"
+##imagePath = pattern #% ( year, month, day, item[1], year, month, day )
+
+##image = HTMLgen.Image( imagePath, alt = "Zits" )
+##doc.append( image )
+
+
+fileName = tempfile.mktemp( "comics.html" )
+
+file = open( fileName, "w" )
+
+print >>file, doc
+
+file.flush()
+
+list = [ "/opt/kde3/bin/konqueror",
+         "--profile",
+         "webbrowsing",
+         fileName ]
+
+os.execv( list[0], list )

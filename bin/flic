@@ -1,0 +1,127 @@
+#!/usr/bin/env groovy
+
+import javax.swing.WindowConstants
+import nrg.ScriptUtils
+import javax.swing.ImageIcon
+import javax.swing.SwingConstants
+import java.awt.event.MouseEvent;
+//import java.awt.event.KeyAdapter;
+import java.awt.event.KeyListener
+import java.lang.Math
+
+
+def utils = new ScriptUtils()
+
+
+def dirToShow   = '/home/tc/misc/images/CanonPictures/Buddy'
+def fileNames   = []
+def images      = []
+
+if ( args.size() == 1 )
+{
+    dirToShow = args[0]
+    images    = new File( dirToShow ).listFiles()
+}
+else if ( args.size() > 1 )
+{
+    fileNames = args
+    fileNames.each
+    {
+        fileName ->
+
+        images << new File( fileName )
+    }
+}
+
+
+
+paused = false
+count  = 0
+swing  = new groovy.swing.SwingBuilder()
+frame  = swing.frame( title: "Image Viewer",
+                      defaultCloseOperation: WindowConstants.EXIT_ON_CLOSE )
+                      
+{
+    button( id:"but",
+            icon: new ImageIcon( images[count].toURL() ),
+            horizontalTextPosition: SwingConstants.CENTER,
+            verticalTextPosition: SwingConstants.BOTTOM,
+            "Click me!" )
+}
+
+button = swing.but
+button.actionPerformed =
+{
+    event ->
+
+    if ( paused )
+    {
+        return;
+    }
+
+    def image = images[count++]
+
+    if ( image )
+    {
+        event.source.icon = new javax.swing.ImageIcon( image.toURL() )
+        frame.pack()
+    }
+}
+
+
+button.addKeyListener( 
+{
+    event ->
+
+    // println "Key event: [${event.keyChar}]"
+
+    if ( event.keyChar == " " )
+    {
+        togglePause()
+    }
+    
+} as KeyListener )
+
+
+button.mouseClicked =
+{
+    event ->
+
+    println "Mouse Clicked: ${event.getButton()}"
+    if ( event.getButton() == MouseEvent.BUTTON1 )
+    {
+        count = count - 1
+        count = Math.max( count, 0 )
+    
+        event.source.icon = new javax.swing.ImageIcon( images[count].toURL() )
+    }
+    else
+    {
+        event.source.icon = new javax.swing.ImageIcon( images[count++].toURL() )
+    }
+
+    println "new count: ${count}"
+}
+
+frame.pack()
+frame.show()
+
+def togglePause()
+{
+    paused = !paused
+}
+
+while ( count < images.size() )
+{
+    if ( paused )
+    {
+        continue;
+    }
+
+    println count
+    button.doClick()
+
+    sleep 3000
+}
+
+System.exit( 0 )

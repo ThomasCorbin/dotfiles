@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cvs update -PAd
+echo "==============================="
+checkStat
+
+artsplay /opt/kde3/share/sounds/KDE_Beep_ShortBeep.wav
+artsplay /opt/kde3/share/sounds/KDE_Beep_ShortBeep.wav
+artsplay /opt/kde3/share/sounds/KDE_Beep_Pop.wav  

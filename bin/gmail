@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require 'gmail'
+require 'ap'
+
+
+class GmailMonitor
+	def initialize( mailboxes_to_monitor, email_address_to_monitor, password )
+		@mailboxes = mailboxes_to_monitor
+		@login		 = email_address_to_monitor
+		@password  = password
+	end
+
+	def monitor
+    Gmail.new(@login, @password) do |gmail|
+    	@mailboxes.each do |mailbox|
+    	  monitor_mailbox gmail, mailbox
+    	end
+    end
+	end
+
+	def monitor_mailbox( gmail, name )
+    mail_box 	= gmail.label( name )
+    count			= mail_box.count :unread
+
+    return if count <= 0
+
+    print_mailbox_count name, count
+    # print_unread_subjects mail_box
+	end
+
+	def print_unread_subjects( mail_box )
+  	mail_box.emails( :unread ).each do |email|
+  	  puts "    #{email.subject}"
+  	  email.mark :unread
+  	end
+	end
+
+	def print_mailbox_count( name, count )
+  	puts "#{name}: #{count}" if count > 0
+	end
+end
+
+worth_listing =
+[
+	'inbox',
+	'Family - Betty Corbin',
+	'Family - Densel Corbin',
+	'Family - Mary Corbin',
+	'Friend - Dalene Erickson',
+	's6 - Steve Ingram',
+	's6 - Steve McMaster',
+	's6 - Victor Clark',
+	's6 - Karen Schaper',
+]
+
+GmailMonitor.new( worth_listing, 'thomas.corbin@gmail.com', 'barton4me' ).monitor
+
+exit

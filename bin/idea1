@@ -1,0 +1,15 @@
+#!/bin/bash
+ 
+export JAVA_HOME=~/misc/jdk1.6.0
+export JDK_HOME=~/misc/jdk1.6.0
+ 
+export IDEA_HOME=~/misc/idea
+ 
+export IDEA_VM_OPTIONS="$IDEA_HOME/bin/idea.vmoptions"
+export IDEA_PROPERTIES="$IDEA_HOME/bin/idea.properties"
+ 
+cd "$IDEA_HOME/bin"
+export LIBXCB_ALLOW_SLOPPY_LOCK=1
+ 
+./idea.sh
+

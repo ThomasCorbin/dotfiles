@@ -1,0 +1,23 @@
+#!/usr/bin/ksh
+# bconv - convert a base 10 number to binary octal and hex.
+
+typeset -i2 binary=$1 # declare binary to be an integer
+                      # with base 2 representation
+
+typeset -i8 octal=$1 # declare octal to be a base 8 integer
+                     # with a base 8 representation
+
+typeset -i16 hex=$1 # declare hex to be base 16 integer
+
+typeset -i10 number=$1 # declare number to be base 10 integer
+
+#strip leading base info from variables before printing
+
+echo "decimal = "${number#*\#}
+
+echo "binary = "${binary#*\#}
+
+echo "octal  = "${octal#*\#}
+
+echo "hex    = "${hex#*\#}
+

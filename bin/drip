@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+#/net/xrxedds/usr/demo/SOUND/play /net/xrxedds/usr/local/sounds/drip.au
+SOUNDDIR=/data/sounds
+play ${SOUNDDIR}/drip.au

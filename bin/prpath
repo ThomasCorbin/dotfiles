@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+input = ARGV[0]
+if ARGV.empty?
+  input = ENV['PATH']
+end
+
+path = input.tr ":", "\n"
+puts path

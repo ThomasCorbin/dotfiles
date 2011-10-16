@@ -1,0 +1,9 @@
+#!/usr/bin/env groovy
+
+//pwd = System.getenv( "PWD" )
+pwd = System.env.PWD
+
+pwd = pwd.substring( pwd.indexOf( "com" ) )
+pwd = pwd.replaceAll( "/", "." )
+
+println pwd

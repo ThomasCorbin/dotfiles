@@ -1,0 +1,35 @@
+#!/usr/bin/env groovy
+
+if ( args.size() < 2 )
+{
+    println "Usage: rename from to [file list]"
+    System.exit( -1 )
+}
+
+def from       = args[0]
+def to         = args[1]
+def fileNames  = args[2..(args.size() - 1)]
+
+// println fileNames
+
+// def dir = new File( "." )
+
+// dir.eachFile
+
+fileNames.each
+{
+    fileName ->
+
+    def file = new File( fileName )
+
+    if ( file.exists() )
+    {
+        def oldName = file.name
+
+        def newName = oldName.replace( from, to )
+        println "renaming ${oldName} to ${newName}"
+
+        def newFile = new File( newName )
+        file.renameTo( newFile )
+    }
+}

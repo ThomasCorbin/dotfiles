@@ -1,0 +1,15 @@
+#!/bin/sh
+
+    if [ $# -lt 1 ]; then
+	echo "Usage: sys1 [sys2 ...]"
+	exit 1
+    fi
+
+    for i in $@
+    do
+        set -x
+        rsh "$i" xmodmap -display oz:0 -e \"pointer = 3 2 1\"
+        sleep 30
+        rsh "$i" xmodmap -display oz:0 -e \"pointer = default\"
+        set +x
+    done

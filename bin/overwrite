@@ -1,0 +1,26 @@
+#!/bin/bash
+# overwrite: copy standard input to output after EOF
+# from ``The UNIX programming environment'', Kernighan and Pike
+
+name=$0
+
+case $# in
+0|1)    echo "Usage: $0 file cmd [args]" 1>&2; exit 2
+esac
+
+file=$1; shift
+new=/tmp/overwr1.$$; old=/tmp/overwr2.$$
+trap 'rm -f $new $old; exit 1' 1 2 15     # clean up files
+
+if "$@" >$new         	# collect input
+then
+    cp $file $old        		# save original file
+    trap '' 1 2 15			# we are committed; ingnore signals
+    cp $new $file
+else
+    echo "$name: $file unchanged - $1 failed"
+    exit 1
+fi
+rm -f $new $old
+
+

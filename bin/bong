@@ -1,0 +1,40 @@
+#!/bin/bash -x
+
+range ()
+{
+    local lower upper output;
+    lower=$1 upper=$2;
+    if [ $lower -gt $upper ]; then
+#	echo "Lower <${lower}> should be less than uppper <${upper}>."
+        return 1
+    fi
+    while [ $lower -le $upper ];
+    do
+        output="$output $lower";
+        lower=$[ $lower + 1 ];
+    done;
+    echo $output
+}
+
+    if [ $# -eq 1 ]; then
+        AUDIO=$1
+    else
+        AUDIO=":0"
+    fi
+
+    sounddir=/data/sounds
+    bindir=/usr/bin
+    volume=50
+
+    hr=$(date '+%H')
+    if [ "$hr" -gt 12 ]; then
+        hr=$(expr $hr - 12)
+    fi
+
+    #${bindir}/play -vol $volume -audio $AUDIO ${sounddir}/BigBen.au
+    ${bindir}/play ${sounddir}/BigBen.au
+    for i in `range 1 $hr`
+    do
+	# ${bindir}/play -vol $volume -audio $AUDIO ${sounddir}/TowerClock.au
+        ${bindir}/play ${sounddir}/TowerClock.au
+    done

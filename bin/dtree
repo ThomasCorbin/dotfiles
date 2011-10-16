@@ -1,0 +1,109 @@
+#!/bin/sh
+#
+# dtree: a program to create a horizontal, tree-like display of the
+#        directory structure.
+#
+#        NOTE: options negate features (ie. '-s' will NOT sort).
+#
+# Jeff Sabat  10/5/88.
+#
+
+#
+# check usage.
+#
+if [ $# -gt 5 ]
+then
+    echo "usage: dtree [ -d ] [ -l ] [ -r ] [ -s ] [ directory ]" 1>&2
+    exit 2
+fi
+
+#
+# set default directory to current directory.
+#
+dir=""
+ls_options="-RL"
+sed_options="-n -e s/://p"
+marker=".   "
+
+#
+# check arguments.
+#
+for arg in $*
+do
+    case $1 in
+        "-l")
+            # No links.  Do not follow symbolic links.
+            ls_options="-R"
+            shift
+            ;;
+        "-r")
+            # No RCS directories.  Do not show RCS directories.
+            sed_options="-e /\/RCS:/d ${sed_options}"
+            shift
+            ;;
+        "-s")
+            # No sort.  Do not sort directory output.
+            ls_options="${ls_options}f"
+            shift
+            ;;
+        "-d")
+            # No dots.  Do not show dots for level markers.
+            marker="    "
+            shift
+            ;;
+        "-"*)
+            echo "dtree: Unknown option '$1'" 1>&2
+            echo "usage: dtree [ -d ] [ -l ] [ -r ] [ -s ] [ directory]" 1>&2
+            exit 2
+            ;;
+        *)
+            if [ "$dir" = "" ]
+            then
+              dir="$1"
+            else
+              echo "usage: dtree [ -d ] [ -l ] [ -r ] [ -s ] [ directory]" 1>&2
+              exit 2
+            fi
+            shift
+            ;;
+    esac
+done
+
+#
+# check if a target directory was specified.
+#
+if [ "$dir" = "" ]
+then
+    dir=`pwd`
+fi
+
+#
+# check if target is a directory and exists.
+#
+if [ -d $dir ]
+then
+    echo -n
+else
+    echo "dtree: '$dir' is not a directory or does not exist." 1>&2
+    exit 2
+fi
+
+#
+# get directory list and format the output.
+#
+cd $dir;
+echo $dir
+ls $ls_options | sed $sed_options | awk \
+        'BEGIN { oldline[1] = "" } \
+    { depth = split($0, newline, "/")  } \
+    { printf "    " } \
+    { for (i = 1;i <= depth;i++) \
+          if (newline[i] == oldline[i]) \
+             printf "'"$marker"'"; \
+          else \
+             printf "/%s\n", newline[i]; \
+    } \
+    { split($0, oldline, "/")  }'
+
+exit 0
+

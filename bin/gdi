@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+#grep = /tmp/dcommit.out | groovy -ne 'println line.split( /\s/ )[2]' | grep -v groovy
+grep = /tmp/dcommit.out | groovy -ne 'println line.split( /\s/ )[2]' | grep -v groovy | grep -v java 2>&1 | tee /tmp/chp.out;
+
+gedit /tmp/chp.out
+

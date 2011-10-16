@@ -1,0 +1,60 @@
+#!/usr/bin/env groovy
+
+// import org.apache.tools.ant.util.TeeOutputStream
+import nrg.ScriptUtils
+
+
+def utils     = new ScriptUtils()
+def ant       = new AntBuilder()
+def usbDrive  = '/media/WD\\ USB\\ 2'
+def destFile  = "${usbDrive}/tcHome.tar.gz"
+def sourceDir = "/home/tc/"
+
+utils.reportActivity( "Backing up [${sourceDir}] to [${destFile}]" )
+
+// ant.record( name: "/tmp/backup.out",
+//             loglevel: "verbose",
+//             emacsmode: false )
+
+ant.delete( file: destFile )
+
+
+//def excludePath = ant.path
+//{
+//    fileset( dir: sourceDir )
+//    {
+//        include( name: "**/*.class" )
+//        include( name: "dev/vendor/*" )
+//        include( name: "dev/oms/build/*" )
+//        include( name: "dev/oms/gbuild/*" )
+//        include( name: "dev/SamSix/omsNetbeans/build/*" )
+//        include( name: "dev/SamSix/omsNetbeans/gbuild/*" )
+//        include( name: "dev/SamSix/nrgWeb/build/*" )
+//        include( name: "dev/SamSix/nrgWeb/gbuild/*" )
+//        include( name: "dev/SamSix/build/*" )
+//    }
+//}
+
+def excludes = [
+        "*.class",
+        "vendor",
+        "build",
+        "gbuild",
+        ".beagle",
+        "User/Cache",
+    ]
+
+
+//println "excludePath: " + excludePath
+
+def command = "tar --totals -C ${sourceDir} "
+
+excludes.each { command += " --exclude '*${it}*' " }
+
+command += "-cvzf ${destFile} ${sourceDir} "
+
+println command
+
+utils.runCommand( command )
+
+println "done"

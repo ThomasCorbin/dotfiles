@@ -1,0 +1,4 @@
+#!/bin/sh -x
+
+	# sudo mount -t iso9660 -v -r /dev/hdd /mnt/cdrom
+	mount /mnt/cdrom

@@ -1,0 +1,103 @@
+#!/usr/bin/python
+
+#
+#  Module chk_reg     Household check register and balance
+#
+# 
+import os
+from string import *
+from copy import copy
+from ch_menu import ch_menu
+#
+
+chk_strings = ['chk','check']
+bal_strings = ['bal','balan']
+dep_strings = ['dep','depos']
+chkprg_strings = ['chkprg','chkprg']
+depprg_strings = ['depprg','depprg']
+#
+#
+try:
+#
+  print '\f'*35     # clear screen
+#
+  i_fl = 1
+  while i_fl:
+    print 'Enter check file name:',
+    chk_name = raw_input()           #fetch check file name
+#
+# does it contain a check identifier substring?
+#
+    s = find(chk_name,chk_strings[0])
+    if s == -1:
+      s = find(chk_name,chk_strings[1])  # did not find, try again
+      if s == -1:
+        errfl = 0     # did not find on second try, set error flag      
+      else:
+        errfl = 1     # found
+        sub1 = chk_strings[1]  #extract proper substrings
+        sub2 = bal_strings[1]
+        sub3 = dep_strings[1]
+        sub4 = chkprg_strings[1]
+        sub5 = depprg_strings[1]      
+    else:
+      errfl = 1
+      sub1 = chk_strings[0]   #extract proper substrings
+      sub2 = bal_strings[0]
+      sub3 = dep_strings[0]
+      sub4 = chkprg_strings[0]
+      sub5 = depprg_strings[0]    
+    if errfl == 1:
+      bal_name = copy(chk_name)       # make copies of check name
+      dep_name = copy(chk_name)
+      chkprg_name = copy(chk_name)
+      depprg_name = copy(chk_name)
+      bal_name = replace(bal_name,sub1,sub2)  # replace chk_strings with balance,
+      dep_name = replace(dep_name,sub1,sub3)  # deposit and purge substrings
+      chkprg_name = replace(chkprg_name,sub1,sub4)
+      depprg_name = replace(depprg_name,sub1,sub5)
+      s = os.path.isfile(chk_name)
+      if s == 0:
+        print 'File does not exist.  Shall I create it(y/n):'
+        y = raw_input()
+        x = y[-1:]
+        if x == 'y' or x == 'Y':
+          fc = open(chk_name,'w')
+          fc.close()
+          fc = open(bal_name,'w')
+          line = '0000.00 ' + ' 0000' + '  0000'
+          fc.write(line)
+          fc.close()
+          fc = open(dep_name,'w')
+          fc.close()
+          fc = open(chkprg_name,'w')
+          fc.close()
+          fc = open(depprg_name,'w')
+          fc .close()
+          i_fl = 0     # close while loop
+        else: 
+          print ' Try again(y/n): ',
+          y = raw_input()
+          x = y[-1:]
+          if x == 'y' or x == 'Y': pass
+          else: raise 'Abort'
+      else: i_fl = 0
+    else:
+      print 'Invalid file name. File name must contain substring "chk" or "check"'
+      print 'Try again(y/n): ',
+      y = raw_input()
+      x = y[-1:]
+      if x == 'y' or x == 'Y': pass
+      else: raise 'Abort'
+#
+#           
+#      
+#
+
+
+except 'Abort':
+  print 'You have chosen to abort.  Sorry I could not help you.'
+#
+ch_menu(chk_name,bal_name,dep_name,chkprg_name,depprg_name)
+#
+print '\nFinished.'

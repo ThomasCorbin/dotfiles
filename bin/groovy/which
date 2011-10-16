@@ -1,0 +1,40 @@
+#!/usr/bin/env groovy
+
+import com.samsix.util.FileUtils
+
+
+def exit =
+{
+    System.exit(0)
+}
+
+def useage =
+{
+    println "Enter name of program to find on PATH"
+    exit()
+}
+
+def fileToFind = args?.size() ? args[0] : useage()
+FileUtils	fileUtils = new FileUtils()
+
+def searchPath =
+{
+    file = new File( it )
+    file.eachFile
+    {
+        f ->
+
+//        if ( f.toString().contains( fileToFind ) )
+        println f.toString()
+        if ( fileUtils.baseName( f.name ) == fileToFind )
+        {
+            println f
+            exit()
+        }
+    }
+}
+
+def paths = [] as Set
+paths = System.env.PATH.split( File.pathSeparator )
+paths.each( searchPath )
+

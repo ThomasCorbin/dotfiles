@@ -1,0 +1,58 @@
+#!/usr/bin/env groovy
+
+//
+//    For some reason, copying all the files in a large dir
+//    can overwhelm the SD card, so this does all the copying,
+//    but slows it down.
+//
+
+class Copy
+{
+    def fileListSize  = 20
+    def fileList      = []
+
+    def copyFiles( fileList, destDirName )
+    {
+        fileList.each
+        {
+            fileToMove ->
+
+            def cmd = "cp $fileToMove $destDirName"
+            println cmd
+            cmd.execute()
+        }
+    }
+
+
+    def copy( sourceDirName, destDirName )
+    {
+        println "Copying files from >$sourceDirName< to >$destDirName<"
+
+        def sourceDir = new File( sourceDirName )
+
+        sourceDir.listFiles().sort().each
+        {
+            file ->
+
+        //    println file
+
+            fileList << file
+
+            if ( fileList.size() == 20 )
+            {
+                copyFiles( fileList, destDirName )
+                fileList = []
+
+                println "Sleeping..."
+                Thread.sleep( 3000 )
+            }
+        }
+
+        copyFiles( fileList, destDirName )
+    }
+}
+
+
+def sourceDirName = args[0]
+def destDirName   = args[1]
+new Copy().copy( sourceDirName, destDirName )

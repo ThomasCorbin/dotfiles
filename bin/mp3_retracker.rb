@@ -1,0 +1,502 @@
+#!/usr/bin/ruby -w
+# -----------------------------------------------------------------------------
+#	mp3_retracker.rb
+# -----------------------------------------------------------------------------
+#
+#	by Chris Tessmer
+#	29 Dec 2004
+#	requires id3v2
+#
+#	Version 0.6
+#	Last modified: 10 Jan 2007
+#   
+#	This program is free software.  
+#	You can distribute/modify this program under the terms of the 
+#	GNU Public License ( http://www.gnu.org/licenses/gpl.txt ).
+#
+# -----------------------------------------------------------------------------
+# Usage:
+#	mp3_retracker [options] file(s)
+#	-n	automatically renumber the track numbers
+#	-h	get help on other options
+#
+# -----------------------------------------------------------------------------
+# Exit Status:
+#	0	Normal Completion
+#	1	No taggable files were given
+#	2	Error in program arguments
+#	3	User cancelled the operation
+#
+# -----------------------------------------------------------------------------
+# Takes in a list of MP3s and adds sequential track numbers to their id3 tags.
+#
+# It does several other things, but the retracking feature is the reason why it
+# was written.
+#
+# -----------------------------------------------------------------------------
+# Version History:
+# 0.1  2004-12-29  first deployment
+# 0.2              Fixed "skip filenames w/characters I don't like" bug.
+# 0.3              Refactored classes to allow for additional tag formats;
+#                  Added -f option.
+# 0.4  2005-04-25  Added optional starting track number argument to -n option
+#                  Replaced GetOptLong with optparse
+# 0.5  2006-12-28  Changed @N to include leading zeros in track title
+#                  Added -c options
+#                  Cleaned whitespace in code
+# 0.6  2007-01-10  Added -m, -w, -x options
+#                  Better quote handling
+#                  Slimmed down Tag classes and made it easier to add fields
+#								 
+# -----------------------------------------------------------------------------
+# Future Plans:
+#	TODO: Add -1/2 flags that limit changes to id3v1.1 or id3v2 tags
+#	TODO: Add a -s flag for silent execution.
+#	TODO: Determine if it's worth the time and effort to build a version
+#				that does not use an external program such as id3v2.
+# TODO: The "#/#" thing in transform_track_number should be optional.
+# -----------------------------------------------------------------------------
+
+# Global Constants
+SCRIPT_VERSION="0.6"
+SCRIPT_VERSION_DATE="10 January 2007"
+EXITSTATUS_COMPLETE=0
+EXITSTATUS_NO_TAGGABLE_FILES=1
+EXITSTATUS_ARG_ERROR=2
+EXITSTATUS_USER_ABORT=3
+
+# Program Requirements
+require 'optparse'
+
+# Controller Class for retracking process
+# TODO: See if there's some way to factor out this really fat class.
+class TagRetracker
+	attr_writer :renumber, :album, :artist, :title, :year, :genre
+	attr_accessor :renumber_start_at, :total_tracks
+	def initialize( _tag, _renumber=false, _force=false)
+		@renumber_start_at = 1
+		@total_tracks = 1
+		@renumber = _renumber
+		@force = _force
+		@tag = _tag
+		@files = Hash.new
+	end
+
+
+	# kick off the retracking
+	def do( args )
+		queue_files_for_processing( args )
+		retrack
+	end
+
+	
+	# Substitute meta characters 
+	def transform_meta_chars( string, count )
+		#FIXME: fix total track number bug 
+		#	20061228: what bug was that again?
+		
+		_total = ( @renumber_start_at + @total_tracks -1 ).to_s
+		_count = count.to_s.rjust(_total.length).sub(' ', '0')
+		
+		string = string.sub( /@[tT]/, _total ) 
+		string = string.sub( /@[nN]/, _count ) 
+		string = string.sub( /@[bB]/, @tag.album ) 
+		string
+	end
+
+
+	#TODO: The "#/#" thing should be optional, eventually.
+	def transform_track_number ( number )
+		_number = number.to_s + "/" + (@renumber_start_at + @total_tracks -1 ).to_s
+	end
+
+
+	# adds file to list, tells user what will be done to it.
+	def add( file, number )
+		@files[ number ] = file 
+	end
+
+
+	# build string to inform the user of the proposed changes to the file.
+	def build_proposal_string( number )
+		result = "\tI propose to do this: "
+		subresult = ""
+
+		if( @renumber )
+			_number = transform_track_number( number ) 
+			subresult += "\n\t\tRenumber the track to \"#{_number}\"."
+		end
+                
+		if( @tag.title )
+			_title = transform_meta_chars( @tag.title, number )
+			subresult += "\n\t\tChange the title to \"#{ _title}\""
+		end
+
+		@tag.instance_variables.sort.each{ |x|
+			if( value = @tag.instance_variable_get( "#{x}" )) 
+			  if not (x === '@title' )
+					y = x.sub( '@', '' ).sub('_', ' ')
+					subresult += "\n\t\tChange the #{y} to \"#{value}\"."
+				end
+			end
+		}
+
+		if( subresult == "" )
+			subresult += "NOTHING! hahaha."
+		end
+
+		result + subresult
+	end
+
+
+	# Sanitizes files given as arguments by only accepting taggable files.
+	# At this time (0.2), taggable files are defined as MP3s.
+	# TODO: Expand taggable formats, if necessary.
+	# Returns an ordered Array of taggable filenames.
+	def clean_file_list( args )
+		dirtyfiles = args
+
+		# only allow .mp3 files into the clean list.
+		files = Array.new
+		dirtyfiles.each { |x| 
+			if( x =~  /.*\.[mM][pP]3$/ )
+				files.push( x )
+			else
+				puts "\tWARNING:  No .mp3 suffix in \"#{x}\"! *** skipping! ***"
+			end
+		}
+
+		files
+	end
+
+
+	def retrack
+		# I'm not really sure how to handle exit statuses gracefully.  It seems like
+		# bad form to plop an "exit!" in the middle of a code block (sort of like 
+		# multiple returns within if blocks, etc). 
+		if( @files.length  > 0 )
+		#     puts to_s
+			puts "Are you okay to proceed (Yes/No)?  This cannot be undone."
+
+			answer = "Yes"
+			if( !@force )
+				answer = STDIN.gets
+			end
+
+			if( answer =~ /Yes/i )
+				retrack_everything
+				exit EXITSTATUS_COMPLETE
+			else
+				puts "Aight.  PROGRAM ABORTED UPON USER'S REQUEST."
+				exit EXITSTATUS_USER_ABORT
+			end
+		else
+			puts "NO FILES FOUND... EXITING!"
+			exit EXITSTATUS_NO_TAGGABLE_FILES
+		end 
+		puts
+	end
+
+
+	# Sifts through all files and adds the .mp3s to the queue 
+	# TODO: See what other filetypes should be included
+	# (id3.org says that some AACs also use ID3s)
+	# TODO: Perhaps add an option to process all given files and not just mp3s? 
+	# FIXME: Raise exceptions on errors (which errors?)
+	def queue_files_for_processing( args )
+		# only queue up files that can have id3 tags to begin with.
+		files = clean_file_list( args )
+
+		# add the files to the queue
+		if( files.length == 0 )
+			puts "None of the files were MP3s!!"
+			#FIXME: should this be an exception?
+		else
+
+			# Set the track number limits
+			count = @renumber_start_at
+			@total_tracks = files.length 
+
+			files.each { |x|
+				puts "checking #{x}..."
+
+				# list its current id3 tag contents.
+				puts "\tid3v2 says this:"
+				puts "\t\t#{ID3Tagger::list_file( x )}"
+
+				# tell the user what the program intends to change
+				puts build_proposal_string( count ) + "\n"
+
+				# add the file to the queue
+				add( x, count )
+				count = count + 1
+			}
+
+			#keep files in order
+			@files.rehash
+		end
+	end
+
+
+	
+	# Retracks each file in the list.
+	# FIXME:  check exit status on id3v2 and respond appropriately if it fails.
+	def retrack_everything()
+		puts "******************* START RETRACKING ********************"
+		@files.each{ |number, value|
+			puts "#{number}. Processing \"#{value}\"..."
+			tagger = ID3Tagger.new( @tag )
+
+			# special cases for track renumbering
+			if( @renumber )
+				tagger.track_number = transform_track_number( number ) 
+			end
+
+			if( @tag.title )
+				tagger.title = transform_meta_chars( @tag.title, number )
+			end
+
+			# tag the track
+			tagger.tag( value )
+		}	
+		
+		puts "\t...done."
+		puts "******************* FINIS RETRACKING ********************"
+	end
+
+
+	# Reports internal state of TagRetracker class as a string.
+	def to_s
+		result = "*** TagRetracker: renumber_start_at = #{@renumber_start_at}" 
+		result += "\ntotal tracks: #{@total_tracks}"
+		result += "\n{@tag.to_s}"
+		result += "\n@files hash: #{@files.to_s}"
+	end
+end
+	
+
+# Data Structure class to hold tag data
+class Tag
+	attr_accessor :album, :artist, :title, :year, :genre, :composer, :album_artist, :web_site
+	def initialize()
+		@album = false
+		@artist = false
+		@title = false
+		@year = false
+		@genre = false
+		@composer = false
+		@album_artist = false
+		@web_site = false
+	end
+
+	def to_s
+		result = ""
+		self.instance_variables.sort.each{ |x|
+			result += "\n#{x}: #{self.instance_variable_get(x)}"
+		}
+		result
+	end
+
+	def copy_tag( _tag )
+		_tag.instance_variables.each{ |x|
+			self.instance_variable_set( x, _tag.instance_variable_get(x) )
+		}
+	end
+end
+
+
+
+#class to manipulate ID3v2 files.
+class ID3Tagger < Tag
+	attr_accessor :track_number
+	def initialize( _tag )
+		super()
+		@track_number = false
+		copy_tag( _tag )
+	end
+
+	# lists the id3 tag contents of a single file.
+	def ID3Tagger.list_file( file )
+		%x{id3v2 -l "#{file}"} 
+	end
+
+
+	# Writes the ID3 tag to the specified file 
+	# FIXME: check exit status on id3v2 and respond appropriately if it fails.
+	def tag( file )
+		id_string =  build_id3v2_string( file )       
+		puts "\tExecuting \"#{id_string}\":"
+		%x{ #{id_string} }
+	end
+
+	protected
+	# Builds a string containing the arguments used to invoke id3v2.
+	def build_id3v2_string( file )
+		result = "id3v2"
+
+		mappings = Hash["track_number" => "-T", 
+		                "year" => "-y",
+										"title" => "-t",
+										"album" => "-A",
+										"genre" => "-g",
+										"artist" => "-a",
+										"composer" => "--TCOM",
+										"album_artist" => "--TPE2",
+										"web_site" => "--WXXX"
+										]
+
+		mappings.each{ |value,flag|
+		  value = "@#{value}"
+			quote = "'"
+			if v = self.instance_variable_get( value )
+				# preemptive quote hack		
+				if v =~ /'/
+					quote = '"'	
+				end
+				#result += " #{flag} '#{instance_variable_get( value )}'"
+				result += " #{flag} #{quote}#{v}#{quote}"
+			end
+		}
+
+		# quote hacks to sanitize command line for id3v2
+		# TODO: this is where a ruby-only id3v2 lib would be handy.
+
+		#dollar sign file names suck
+		file = file.gsub( "$", "\\\\$" )
+		result + "  \"#{file}\""
+	end
+end
+
+
+
+class RetrackerMain
+	def initialize
+	end
+
+
+	#Performs the responsibilities of the Main class.
+	def do( argv )
+		id3v2 = process_options argv
+
+		# Add all taggable files to the queue.
+		# TODO: Will throw exceptions in the future.  (3/29/04: why?)
+		id3v2.do( argv )
+	end
+
+	protected
+
+	# Essentially a factory method to create the TagRetracker object.
+	# Builds and returns a TagRetracker based on the arguments given at the command line.
+	def process_options ( argv )
+		tag = Tag.new
+		renumber = false
+		force = false
+		renumber_start_at = 1
+		doexit = false 
+		title_default = "@B, @N of @T"
+
+		begin
+			argv.options{ |opt|
+
+				# help message banner and usage instructions
+				opt.banner = "A script by Chris Tessmer that Retracks all mp3 id3v2 tags.\n"
+				opt.banner += "version #{SCRIPT_VERSION}, #{SCRIPT_VERSION_DATE}.\n"
+				opt.banner += "\n"
+				opt.banner += "Usage: mp3_retracker [options] file(s)\n"
+				opt.banner += "\n"
+
+				# Defing options
+				opt.on( "Options:" )
+				opt.on( "--renumber [START NUMBER]", "-n",  Integer,  "renumber tracks" ) {|n|
+					renumber = true 
+					renumber_start_at = n || 1 
+					if( renumber_start_at < 1 )
+						renumber_start_at = 1
+					end
+					}
+				opt.on( "--force", 
+					"-f", 
+					"Force 'yes' to all questions")	{
+					force = true }
+				opt.on( "--album 'ALBUM'" , 
+					"-b", 
+					String,  
+					"sets the album name") {
+					 |tag.album| 
+					 }
+				opt.on( "--artist 'ARTIST'" , "-a", String,  "sets the artist name") {
+					|tag.artist| }
+				opt.on( "--composer [COMPOSER]" , "-c", String,  "sets the composer name (defaults to artist)") { |c|
+				    tag.composer = c || nil
+					}
+				opt.on( "--genre 'GENRE'" , "-g", String,  "sets the genre") {
+					|tag.genre| }
+				opt.on( "--title [TITLE]", "-t", String, "sets title (uses meta chars, default = \"#{title_default}\")" ) { 
+						|t|
+						tag.title = t || title_default
+					}
+				opt.on( "--year YEAR", "-y",  String,  "sets year" ) {|y|
+					if( y =~ /^\d{4,4}$/ )
+						tag.year = y 
+					else
+						raise "Bad year '#{y}'- must be in four-digit (YYYY) numeric format."    
+					end
+					}
+				opt.on( "--website 'URL'", "-w", String, "sets website" ) { 
+					|tag.web_site| }
+				opt.on( "--album-artist 'ARTIST'", "-m", String, "sets album artist" ) { 
+					|tag.album_artist| }
+				opt.on( "--retrack-defaults 'ALBUM'", "-x", String, "equivilant to -n -t -b ALBUM" ){
+					|tag.album|
+					renumber = true
+					renumber_start_at = 1
+					tag.title = title_default
+				}
+				opt.on( "--help", "-h", "This text" ) { 
+					puts opt
+					exit EXITSTATUS_COMPLETE
+				}
+				
+				# Additional help message instructions:
+				opt.separator ""
+				opt.separator "Meta Characters:"
+				opt.separator "\t@N Track Number"
+				opt.separator "\t@T Total Tracks"
+				opt.separator "\t@B Album Name"
+				opt.separator ""
+				opt.parse!
+
+				if tag.composer.nil?
+					if not tag.composer = tag.artist
+						raise "Composer Requested with no Composer or Artist given."
+					end
+				end
+
+				# Exit with help message if no arguments are given
+				if( argv.length == 0 )
+					puts opt
+					doexit = true
+				end 
+			}
+
+		rescue Exception => e
+			STDERR.puts "\n#{e.class}"
+			STDERR.puts "\t#{e}\n"
+			STDERR.puts "Since this messed up the arguments, I am ABORTING THE PROGRAM.  Sorry.\n\n"
+			exit EXITSTATUS_ARG_ERROR
+		end
+	
+		# Handle graceful exit (couldn't put in opt block because of rescue clause)
+		if doexit
+			exit EXITSTATUS_COMPLETE
+		end
+			
+		t = TagRetracker.new( tag, renumber, force )
+		t.renumber_start_at = renumber_start_at
+		t
+	end
+end
+
+# It's showtime!
+main = RetrackerMain.new
+main.do( ARGV )

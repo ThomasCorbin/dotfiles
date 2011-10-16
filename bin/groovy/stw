@@ -1,0 +1,23 @@
+#!/usr/bin/env groovy
+
+import com.samsix.util.debug.SelPageGrabber
+
+def webSite         = "http://localhost:8084"
+//def webSite         = "http://localhost:8084/nrg/app"
+def login = "tc"
+def pword = "aet"
+//def url = "${webSite}/startup?username=${login}&encryptedPassword=${pword}"
+def url = "${webSite}/startup/username/${login}/encryptedPassword/${pword}"
+//def url = "${webSite}/startup"
+
+
+def grabber = new SelPageGrabber( webSite )
+try
+{
+    println grabber.grab( "/nrg/app/startup" )
+}
+finally
+{
+    grabber.stop()
+}
+

@@ -1,0 +1,16 @@
+#!/bin/bash
+# replace: replace str1 in files with str2, in place
+# from ``The UNIX programming environment'', Kernighan and Pike
+
+case $# in
+0|1|2) echo "Usage: $0 str1 str2 files" 1>&2; exit 1
+esac
+
+left="$1"; right="$2"; shift; shift
+
+for i
+do
+    overwrite $i sed "s@$left@$right@g" $i
+done
+
+

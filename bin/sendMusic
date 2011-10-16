@@ -1,0 +1,15 @@
+#!/bin/bash -x
+
+
+#	--remove-older-than 6M \
+
+rdiff-backup \
+	--force \
+	--no-compression \
+	--override-chars-to-quote '' \
+	--print-statistics \
+	/usr/data/sounds \
+	/media/WD\ USB\ 2/data/sounds
+
+
+alert -t 'Music Backups done'

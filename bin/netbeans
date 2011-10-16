@@ -1,0 +1,28 @@
+#!/bin/bash
+
+JAVA_HOME=/home/tc/misc/jdk1.6.0
+
+PATH=$JAVA_HOME/bin:$PATH:~/misc/netbeans/bin
+
+~/misc/netbeans/bin/netbeans \
+	--jdkhome $JAVA_HOME \
+        -J-Djava.net.preferIPv4Stack=true \
+        -J-Xmx1024m \
+        -J-Dnetbeans.keep.expansion \
+        -J-Dnb.navigator.singleclick \
+	-J-Dtop=/home/tc/dev/oms \
+	-J-Dtop.log=/tmp/oms \
+	-J-Dswing.aatext=true \
+        --laf com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel \
+        --fontsize 14 \
+        -fontsize 14 \
+        "$@"
+
+#	-J-Dawt.useSystemAAFontSettings=on \
+#        --laf com.sun.java.swing.plaf.gtk.GTKLookAndFeel \
+#        --laf com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel \
+
+#        -J-Xms256m \
+#        -J-Xmx1024m \
+#        -J-XX:PermSize=128m \
+#        -J-XX:MaxPermSize=256m \

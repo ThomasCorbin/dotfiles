@@ -1,0 +1,82 @@
+#!/usr/bin/env groovy
+
+import groovy.swing.SwingBuilder  
+import griffon.builder.gfx.*  
+import griffon.builder.gfx.swing.GfxCanvas
+import java.awt.Color  
+  
+class SphereNode extends CustomGfxNode {  
+  @GfxAttribute(alias="r") double radius = 90  
+  @GfxAttribute double cx = 100  
+  @GfxAttribute double cy = 100  
+  @GfxAttribute Color base     = Colors.get("blue")  
+  @GfxAttribute Color ambient  = Colors.get(r: 6,  g: 76,  b: 160, a: 127)  
+  @GfxAttribute Color specular = Colors.get(r: 64, g: 142, b: 203, a: 255)  
+  @GfxAttribute Color shine    = Colors.get("white")  
+  
+  SphereNode() {  
+    super("sphere")  
+  }  
+  
+  DrawableNode createNode(GfxBuilder builder) {  
+    double height = radius * 2  
+    builder.group(borderColor: 'none') {  
+      circle(cx: cx, cy: cy, radius: radius, fill: base)  
+      circle(cx: cx, cy: cy, radius: radius) {  
+        multiPaint {  
+          radialGradient(radius: radius) {  
+            stop(offset: 0.0f, color: ambient)  
+            stop(offset: 1.0f, color: rgba(alpha: 204))  
+          }  
+          radialGradient(cy: cy + (height*0.9),  
+                         fy: cy + (height*1.1)+20,  
+                         radius: radius) {  
+            stop(offset: 0.0f, color: specular)  
+            stop(offset: 0.8f, color: specular.derive(alpha: 0))  
+            transforms{ scale(y: 0.5) }  
+          }  
+          radialGradient(fit: false, fx: 55, fy: 35, radius: height/1.4){  
+            stop(offset: 0.0f, color: shine.derive(alpha:0.5))  
+            stop(offset: 0.5f, color: shine.derive(alpha:0))  
+          }  
+        }  
+      }  
+    }  
+  }  
+}  
+  
+def gfx = new GfxBuilder()  
+def node = gfx.group() {  
+  antialias true  
+  background(color('white'))  
+  customNode(SphereNode)  
+  customNode(SphereNode, cx: 300,  
+    base: color('red'),  
+    ambient:  Colors.get(r: 160, g: 76,  b: 6,  a: 127),  
+    specular: Colors.get(r: 203, g: 64, b: 64, a: 255))  
+  customNode(SphereNode, cy: 300,  
+    base: color('green'),  
+    ambient:  Colors.get(r: 160, g: 76,  b: 6,  a: 127),  
+    specular: Colors.get(r: 64, g: 250, b: 64, a: 255))  
+  customNode(SphereNode, cx: 300, cy: 300,  
+    base: color('orange'),  
+    ambient:  Colors.get(r: 160, g: 76,  b: 6,  a: 127),  
+    specular: Colors.get(r: 203, g: 203, b: 64, a: 255))  
+}  
+  
+def swing = new SwingBuilder()  
+swing.edt {  
+  frame(title: "Sphere", size: [410,430], visible: true) {  
+//    panel(new GfxCanvas(), id: "canvas", node: node)
+    panel( id: "canvas" )
+    {
+//        widget( new GfxCanvas() )
+        canvas()
+        {
+            node
+        }
+    }
+//    canvas( id: "canvas", node: node)  
+  }  
+}  
+

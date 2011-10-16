@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# xset dpms force off makes the DVI screen to go power safe
+# xset dpms force suspend makes the VGA screen to go power safe
+xset s activate
+xset dpms force off

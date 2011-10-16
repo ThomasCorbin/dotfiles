@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import urllib
+import sys
+import mimetools
+import string
+
+def getURL( url, path ):
+
+    print "URL: %s,\tfile: %s" % (url, path)
+
+    # urllib.URLopener().retrieve( url, filename = path )
+
+    urlfile = urllib.URLopener().open( url )
+
+    headers = urlfile.info()
+    if headers.has_key('content-length'):
+        maxsize = string.atoi( headers.getheader( 'content-length' ) ) 
+        print "Maxsize: %d" % maxsize
+    
+    outfile = open( path, 'wb' )
+    cursize = 0
+    blocksize = 1024 * 8
+    block = urlfile.read( blocksize )
+    cursize = cursize + blocksize
+
+    while block:
+        outfile.write( block )
+        print "Read/written %d/%d" % (cursize, maxsize)
+        block = urlfile.read( blocksize )
+        cursize = cursize + blocksize
+
+    urlfile.close()
+    outfile.close()
+    del urlfile
+    del outfile
+    
+# getURL
+
+
+getURL( sys.argv[1], sys.argv[2] )

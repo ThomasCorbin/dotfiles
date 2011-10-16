@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+#    Cleans up my home file system.
+#
+#    Removes:
+#        Core files.
+#        Files which end in "~".  These are ususally emacs back up files.
+#        Files which start with "#".  These are usually temporary
+#                or back up files.
+#
+#    tc March 9, 1986
+#    Created.
+#
+#    tc Nov 12, 1987
+#    Added the "#!/bin/sh".
+#
+#    tc May 9, 1989
+#    Added comments, -fb switch, changed to /bin/csh.
+#
+
+find $HOME \( -name \*~ -o -name .\*~ -o -name core -o -name \.\#\* -o -name \*.recover -o -name hs_err_\* -o -name \*.backup -o -name \*.bak -o -name flist.\* -o -name foo -o -name error -o -name zzz -o -name yyy -o -name xxx -o -name svn-commit\*.tmp -o -name \#\* \) -print -exec rm -f {} \;
+
+find $HOME/Mail \( -name \,\* \) -print -exec rm -f {} \;

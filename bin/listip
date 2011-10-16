@@ -1,0 +1,4 @@
+#/usr/bin/bash
+
+/sbin/ifconfig -a |\
+  awk '/inet addr:/{split($0,a,":");split(a[2],a," ");print a[1];}'

@@ -1,0 +1,20 @@
+#!/usr/bin/env groovy
+
+import groovy.xml.MarkupBuilder
+
+
+        def writer      = new StringWriter()
+        def builder     = new MarkupBuilder( writer )
+
+        builder.'wicket:panel'
+        {
+            addReportLinks( builder,  "foo" )
+        }
+
+        println writer.toString()
+
+
+    def addReportLinks( builder, reports )
+    {
+        builder.div( 'wicket:id': "${reports}" )
+    }

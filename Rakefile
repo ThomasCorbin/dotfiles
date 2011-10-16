@@ -32,11 +32,19 @@ task :install do
     InstallFile.new( file ).install
   end
 
-  bfuncs = Dir['bin/bfuncs/*'].collect{ |s| InstallFile.new( s, File.join( ENV['HOME'], s ) )}
+  install_dir 'bin'
+  install_dir 'bin/bfuncs'
+end
+
+
+def install_dir( dir )
+  bfuncs = Dir[ "#{dir}/*" ].reject{ |f| File.directory? f }.collect do |s|
+    InstallFile.new( s, File.join( ENV['HOME'], s ) )
+  end
+
+
   bfuncs.each do |f|
     # puts f
     f.install
   end
-  # other = [ Install.new( ) ]
 end
-

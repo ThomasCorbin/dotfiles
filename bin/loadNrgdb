@@ -1,0 +1,30 @@
+#!/bin/sh -x
+
+NRGDB=/home/tc/dev/oms/src/com/coned/nrgdb.gz
+PGHOST=localhost
+
+dropdb dmsdb
+
+#createdb -D PGDATA2 -T template0 dmsdb
+createdb -T template0 dmsdb
+
+createlang plpgsql $PGDATABASE
+psql -ef /usr/share/postgresql/contrib/postgis.sql
+psql -ef /usr/share/postgresql/contrib/spatial_ref_sys.sql
+
+gunzip -c $NRGDB | psql dmsdb 2>&1 | tee /tmp/db.create.out
+
+pg.load -t UserProperty.dump
+pg.load -t Users.dump
+
+psql -c "reindex table Connection"
+psql -c "reindex table nrgLineFeature"
+psql -c "reindex table nrgFeature"
+psql -c "reindex table nrgFeature_ed"
+psql -c "reindex table nrgFeature_gd"
+psql -c "reindex table nrgPolyFeature"
+psql -c "reindex table nrgSymbolFeature"
+
+artsplay /opt/kde3/share/sounds/KDE_Beep_ShortBeep.wav
+artsplay /opt/kde3/share/sounds/KDE_Beep_ShortBeep.wav
+artsplay /opt/kde3/share/sounds/KDE_Beep_Pop.wav  

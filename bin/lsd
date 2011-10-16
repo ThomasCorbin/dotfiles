@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+#     -*- Mode: ruby -*-
+# lsd: list directories
+
+LINE_SIZE = 80
+COLUMN_SIZE = 20
+
+def stuff(total, col, strs)
+  result = Array.new
+  aLine = ""
+
+  strs.each {
+    | item |
+    if item.size > total
+      if aLine.size > 0
+	result.push(aLine)
+	aLine = ""
+      end
+      result.push(item)
+    elsif (col - aLine.size % col + aLine.size + item.size) > total
+      result.push(aLine)
+      aLine = item
+    elsif aLine.size > 0
+      aLine << ' ' * (col - aLine.size % col) << item
+    else
+      aLine << item
+    end
+  }
+  if aLine.size > 0
+    result.push(aLine)
+  end
+  return result
+end
+
+#$stdout.sync = true
+#$stderr.sync = true
+#print "hi ", ARGV, "\n"
+#print "hi ", ARGV[0], "\n"
+#place = ARGV[0]
+#print "hi ", place[0..0], "\n"
+
+if ARGV.size > 0
+  if ARGV[0][0..0] == "/"
+    wd = ARGV[0]
+  else
+    wd = Dir.pwd + "/" + ARGV[0]
+  end
+  Dir.chdir(wd)
+else
+  wd = Dir.pwd
+end
+
+dirs = Array.new
+
+Dir.foreach(wd) {
+  | filename |
+  if test(?d, filename)
+    dirs.push(filename)
+  end
+}
+stuff(LINE_SIZE, COLUMN_SIZE, dirs.sort).each {
+  | line |
+  print line, "\n"
+}

@@ -1,0 +1,2 @@
+#!/bin/sh
+find $1 \( -name \*~ -o -name .\*~ -o -name core -o -name \*.recover -o -name \*.backup -o -name \*.bak -o -name flist.\* -o -name foo -o -name error -o -name svn-commit\*.tmp -o -name zzz -o -name yyy -o -name xxx -o -name \#\* \) -print -exec rm -f {} \;

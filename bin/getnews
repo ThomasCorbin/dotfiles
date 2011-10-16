@@ -1,0 +1,55 @@
+#! /usr/bin/env python
+#	-*- Mode: Python -*-
+
+"""
+Get all the outstanding articles in a newsgroup and add them
+as mh mail to the appropriately named mh folder.  The appropriately
+named mh folder will be named the same name as the group.  If
+the folder doesn't already exist, it will be created.
+"""
+
+#----------------------------------------
+#    Imports
+#----------------------------------------
+import mhnews
+import sys
+
+def main():
+
+    #groupname = 'comp.os.linux.announce'
+    #server = 'news.clark.net'
+    groupname, server, start, article = mhnews.getNewsArgs( __doc__ )
+    # print 'Group is <%s>' % groupname
+    # print 'Server is <%s>' % server
+
+
+    news = mhnews.server( server )
+    group = mhnews.group( news, groupname )
+
+    print group
+
+    if ( article > 0 ):
+        group.syncArticle( `article` )
+    else:
+        group.sync( start )
+
+    del group
+    del news
+
+main()
+sys.exit()
+
+try:
+    main()
+except:
+    if sys.exc_type == KeyboardInterrupt:
+        print
+        print "You have chosen to exit <%s>." \
+              % (posixpath.basename(sys.argv[0]))
+    elif sys.exc_type != SystemExit:
+        print
+        print "Exception detected:"
+        print "    <%s> - <%s>" % ( sys.exc_type, sys.exc_value)
+        # import traceback
+        # print
+        # print traceback.print_tb( sys.exc_traceback )

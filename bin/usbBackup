@@ -1,0 +1,37 @@
+#!/usr/bin/env groovy
+
+// import org.apache.tools.ant.util.TeeOutputStream
+import nrg.ScriptUtils
+
+
+def utils     = new ScriptUtils()
+def ant       = new AntBuilder()
+def usbDrive  = "/media/WD_USB_2"
+def destFile  = "${usbDrive}/tcHome.tar.gz"
+def sourceDir = "/home/tc/"
+
+utils.reportActivity( "Backing up [${sourceDir}] to [${destFile}]" )
+
+ant.record( name: "/tmp/backup.out",
+            loglevel: "verbose",
+            emacsmode: false )
+
+ant.delete( file: destFile )
+
+ant.tar( destfile: destFile,
+         longfile: "gnu",
+         compression: "gzip" )
+{
+    tarfileset( dir: sourceDir )
+    {
+        exclude( name: "**/*.class" )
+        exclude( name: "**/dev/vendor/*" )
+        exclude( name: "**/oms/build/*" )
+        exclude( name: "**/oms/gbuild/*" )
+        exclude( name: "**/SamSix/omsNetbeans/build/*" )
+        exclude( name: "**/SamSix/omsNetbeans/gbuild/*" )
+        exclude( name: "**/SamSix/nrgWeb/build/*" )
+        exclude( name: "**/SamSix/nrgWeb/gbuild/*" )
+        exclude( name: "**/vendor/lib/*" )
+    }
+}

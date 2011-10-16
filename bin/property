@@ -1,0 +1,38 @@
+#!/usr/bin/env groovy
+
+
+class Property
+{
+    static void main( args )
+    {
+        if ( args.size() < 2  )
+        {
+            println "Usage: property <var name> <var type>"
+            System.exit( -1 )
+        }
+
+        def tmp          = args[0]
+        def propertyName = tmp[0].toLowerCase() + tmp.substring(1)
+        def capName      = propertyName[0].toUpperCase() + propertyName.substring(1)
+        def type         = args[1]
+
+        def output = """
+    private ${type}        _${propertyName};
+        
+    public void set${capName}( ${type}    ${propertyName} )
+    {
+        _${propertyName} = ${propertyName};
+    }
+
+
+    public ${type} get${capName}()
+    {
+        return _${propertyName};
+    }
+
+
+"""
+
+        print output
+    }
+}

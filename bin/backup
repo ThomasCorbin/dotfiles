@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#        --dry-run \
+
+
+#        --exclude=.kde/ \
+#        --exclude=.kde \
+
+rsync -vaz \
+        --stats \
+        --exclude=.licq/licq_fifo \
+        --exclude=.thumbnails/ \
+        --exclude=.thumbnails \
+        --exclude=.kde/share/cache/ \
+        --exclude=.kde/share/thumbnails/ \
+        --exclude=misc/src/konstruct/ \
+        --exclude=misc/crossover/support/dotwine/wineserver-laptop/socket \
+        --update \
+        --delete \
+        --links \
+        --hard-links \
+        --perms \
+        --owner \
+        --group \
+        --times \
+        --recursive \
+        /home/tc \
+        /media/2a9e75ca-e164-462b-93e4-0dbfe568c1dd/home \
+
+#        --rsh=/usr/bin/ssh \
+#        hal:/home
+

@@ -1,0 +1,23 @@
+Requirements:
+
+- ruby
+- imagemagick
+
+Usage:
+
+1. make the script executable (chmod +x imploader.rb)
+2. edit imploader.rb, add the desired path, width/height of the wallpaper, style etc
+3. "imploader.rb --help" shows the options (not too many, currently :)
+4. run "imploader.rb" to download images and generate a wallpaper OR
+   run "imploader.rb -n" to generate a new wallpaper without connecting to the
+   internet, from the previously downloaded images.
+
+The image generated is always saved to: TMPPATH/collage.jpg. That means, if you set your wallpaper to this file, it will be updated automatically when you rerun imploader.
+
+In TMPPATH/additional_images, that is generated when imploader is run for the first time, you can put images you want to have shown besides the movie posters. For example photos or older posters. These are always shown, and the "empty places" are filled with the posters from the internet.
+
+Suggestion:
+
+Put "imploader.rb" in a cronjob to run about once a week, and "imploader.rb" in a cronjob to run about each hour once, and you always have an inspiring desktop background showing what is currently in the theaters :D
+
+Bug reports, suggestions etc. welcome: rggjan@gmail.com

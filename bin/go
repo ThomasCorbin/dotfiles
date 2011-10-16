@@ -1,0 +1,437 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2002 Trent Mick
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+"""
+    Quick directory changing.
+
+    Usage:
+        go <shortcut>[/sub/dir/path]        # change directories
+        go <option> [<optarg>]              # set, add, delete shortcuts
+
+    Options:
+        -h, --help                  print this help and exit
+        -V, --version               print verion info and exit
+
+        -s, --set <name>:<value>    set a shortcut
+        -a, --add-current <name>    add shortcut for current directory
+        -d, --delete <name>         delete the named shortcut
+        -l, --list                  list current shortcuts
+
+    Generally you have a set of directories that you commonly visit. Typing
+    these paths in full can be a pain. This script allows one to define a set
+    of directory shortcuts to be able to quickly change to them. For example,
+    I could define 'ko' to represent "D:\\trentm\\main\\Apps\\Komodo-devel",
+    then
+        C:\\> go ko
+        D:\\trentm\\main\\Apps\\Komodo-devel>
+    and
+        C:\\> go ko/test
+        D:\\trentm\\main\\Apps\\Komodo-devel\\test>
+    Some standard shortcuts, such as '~', are setup.
+
+    See http://starship.python.net/~tmick for more information.
+
+"""
+#Tech Notes:
+#    Set shortcuts are stored in an XML file in either
+#    (<AppDataDir>\\TrentMick\\go\\shortcuts.xml).
+#
+
+import os
+import sys
+import getopt
+import pprint
+import xml.dom.minidom
+
+
+#---- exceptions
+
+class GoError(Exception):
+    pass
+
+
+#---- global data
+
+_version_ = (0, 6, 3)
+_gEnvVar = "GO_SHELL_SCRIPT"
+
+
+#---- internal support stuff
+
+def _isdir(dirname):
+    """os.path.isdir() doesn't work for UNC mount points. Fake it.
+    
+    # For an existing mount point (want: _isdir() == 1)
+    os.path.ismount(r"\\crimper\apps") -> 1
+    os.path.exists(r"\\crimper\apps") -> 0
+    os.path.isdir(r"\\crimper\apps") -> 0
+    os.listdir(r"\\crimper\apps") -> [...contents...]
+    # For a non-existant mount point (want: _isdir() == 0)
+    os.path.ismount(r"\\crimper\foo") -> 1
+    os.path.exists(r"\\crimper\foo") -> 0
+    os.path.isdir(r"\\crimper\foo") -> 0
+    os.listdir(r"\\crimper\foo") -> WindowsError
+    # For an existing dir under a mount point (want: _isdir() == 1)
+    os.path.mount(r"\\crimper\apps\Komodo") -> 0
+    os.path.exists(r"\\crimper\apps\Komodo") -> 1
+    os.path.isdir(r"\\crimper\apps\Komodo") -> 1
+    os.listdir(r"\\crimper\apps\Komodo") -> [...contents...]
+    # For a non-existant dir/file under a mount point (want: _isdir() == 0)
+    os.path.ismount(r"\\crimper\apps\foo") -> 0
+    os.path.exists(r"\\crimper\apps\foo") -> 0
+    os.path.isdir(r"\\crimper\apps\foo") -> 0
+    os.listdir(r"\\crimper\apps\foo") -> []  # as if empty contents
+    # For an existing file under a mount point (want: _isdir() == 0)
+    os.path.ismount(r"\\crimper\apps\Komodo\latest.komodo-devel.txt") -> 0
+    os.path.exists(r"\\crimper\apps\Komodo\latest.komodo-devel.txt") -> 1
+    os.path.isdir(r"\\crimper\apps\Komodo\latest.komodo-devel.txt") -> 0
+    os.listdir(r"\\crimper\apps\Komodo\latest.komodo-devel.txt") -> WindowsError
+    """
+    if sys.platform[:3] == 'win' and dirname[:2] == r'\\':
+        if os.path.exists(dirname):
+            return os.path.isdir(dirname)
+        try:
+            os.listdir(dirname)
+        except WindowsError:
+            return 0
+        else:
+            return os.path.ismount(dirname)
+    else:
+        return os.path.isdir(dirname)
+
+
+def _mkdir(newdir):
+    """works the way a good mkdir should :)
+        - already exists, silently complete
+        - regular file in the way, raise an exception
+        - parent directory(ies) does not exist, make them as well
+    """
+    if _isdir(newdir):
+        pass
+    elif os.path.isfile(newdir):
+        raise OSError("a file with the same name as the desired " \
+                      "dir, '%s', already exists." % newdir)
+    else:
+        head, tail = os.path.split(newdir)
+        if head and not _isdir(head):
+            _mkdir(head)
+        #print "_mkdir %s" % repr(newdir)
+        if tail:
+            log.debug('mkdir "%s"' % newdir)
+            os.mkdir(newdir)
+
+
+def _copy(src, dst):
+    """works the way a good copy should :)
+        - no source, raise an exception
+        - destination directory, make a file in that dir named after src
+        - source directory, recursively copy the directory to the destination
+        - filename wildcarding allowed
+    NOTE:
+        - This copy CHANGES THE FILE ATTRIBUTES.
+    """
+    import string, glob, shutil
+
+    assert src != dst, "You are try to copy a file to itself. Bad you! "\
+                       "src='%s' dst='%s'" % (src, dst)
+    # determine if filename wildcarding is being used
+    # (only raise error if non-wildcarded source file does not exist)
+    if string.find(src, '*') != -1 or \
+       string.find(src, '?') != -1 or \
+       string.find(src, '[') != -1:
+        usingWildcards = 1
+        srcFiles = glob.glob(src)
+    else:
+        usingWildcards = 0
+        srcFiles = [src]
+
+    for srcFile in srcFiles:
+        if os.path.isfile(srcFile):
+            if usingWildcards:
+                srcFileHead, srcFileTail = os.path.split(srcFile)
+                srcHead, srcTail = os.path.split(src)
+                dstHead, dstTail = os.path.split(dst)
+                if dstTail == srcTail:
+                    dstFile = os.path.join(dstHead, srcFileTail)
+                else:
+                    dstFile = os.path.join(dst, srcFileTail)
+            else:
+                dstFile = dst
+            dstFileHead, dstFileTail = os.path.split(dstFile)
+            if dstFileHead and not _isdir(dstFileHead):
+                _mkdir(dstFileHead)
+            if _isdir(dstFile):
+                dstFile = os.path.join(dstFile, os.path.basename(srcFile))
+            #print "copy %s %s" % (srcFile, dstFile)
+            if os.path.isfile(dstFile):
+                # make sure 'dstFile' is writeable
+                os.chmod(dstFile, 0755)
+            log.debug('copy "%s" "%s"' % (srcFile, dstFile))
+            shutil.copy(srcFile, dstFile)
+            # make the new 'dstFile' writeable
+            os.chmod(dstFile, 0755)
+        elif _isdir(srcFile):
+            srcFiles = os.listdir(srcFile)
+            if not os.path.exists(dst):
+                _mkdir(dst)
+            for f in srcFiles:
+                s = os.path.join(srcFile, f)
+                d = os.path.join(dst, f)
+                try:
+                    _copy(s, d)
+                except (IOError, os.error), why:
+                    raise OSError("Can't copy %s to %s: %s"\
+                          % (repr(s), repr(d), str(why)))
+        elif not usingWildcards:
+            raise OSError("Source file %s does not exist" % repr(srcFile))
+
+
+
+#---- public stuff
+
+def getShortcutsFile():
+    """Return the path to the shortcuts file."""
+    fname = "shortcuts.xml"
+    if sys.platform.startswith("win"):
+        # Favour ~/.go if shortcuts.xml already exists there, otherwise
+        # favour CSIDL_APPDATA/... if have win32com to *find* that dir.
+        dname = os.path.expanduser("~/.go")
+        shortcutsFile = os.path.join(dname, fname)
+        if not os.path.isfile(shortcutsFile):
+            try:
+                from win32com.shell import shellcon, shell
+                dname = os.path.join(
+                    shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0),
+                    "TrentMick", "Go")
+                shortcutsFile = os.path.join(dname, fname)
+            except ImportError:
+                pass
+    else:
+        dname = os.path.expanduser("~/.go")
+        shortcutsFile = os.path.join(dname, fname)
+    return shortcutsFile
+
+def getDefaultShortcuts():
+    """Return the dictionary of default shortcuts."""
+    import tempfile
+    shortcuts = {
+        '.': os.curdir,
+        '..': os.pardir,
+        '...': os.path.join(os.pardir, os.pardir),
+        'tmp': tempfile.gettempdir(),
+    }
+    try:
+        shortcuts['~'] = os.environ['HOME']
+    except KeyError:
+        pass
+    return shortcuts
+
+def setShortcut(name, value):
+    """Add the given shortcut mapping to the XML database.
+    
+        <shortcuts version="...">
+            <shortcut name="..." value="..."/>
+        </shortcuts>
+    """
+    shortcutsXml = getShortcutsFile()
+    if os.path.isfile(shortcutsXml):
+        dom = xml.dom.minidom.parse(shortcutsXml)
+    else:
+        dom = xml.dom.minidom.parseString(
+                    '<shortcuts version="1.0"></shortcuts>')
+
+    shortcuts = dom.getElementsByTagName("shortcuts")[0]
+    for s in shortcuts.getElementsByTagName("shortcut"):
+        if s.getAttribute("name") == name:
+            if value:
+                s.setAttribute("value", value)
+            else:
+                shortcuts.removeChild(s)
+            break
+    else:
+        if value:
+            s = dom.createElement("shortcut")
+            s.setAttribute("name", name)
+            s.setAttribute("value", value)
+            shortcuts.appendChild(s)
+
+    if not os.path.isdir(os.path.dirname(shortcutsXml)):
+        os.makedirs(os.path.dirname(shortcutsXml))
+    fout = open(shortcutsXml, 'w')
+    fout.write(dom.toxml())
+    fout.close()
+
+
+def getShortcuts():
+    """Return the shortcut dictionary."""
+    shortcuts = getDefaultShortcuts()
+
+    shortcutsXml = getShortcutsFile()
+    if os.path.isfile(shortcutsXml):
+        dom = xml.dom.minidom.parse(shortcutsXml)
+        shortcutsNode = dom.getElementsByTagName("shortcuts")[0]
+        for shortcutNode in shortcutsNode.getElementsByTagName("shortcut"):
+            name = shortcutNode.getAttribute("name")
+            value = shortcutNode.getAttribute("value")
+            shortcuts[name] = value
+
+    return shortcuts
+
+
+def generateShellScript(scriptName, path=None):
+    shortcuts = getShortcuts()
+
+    if path:
+        tagend = path.find('/')
+        if tagend == -1:
+            tagend = path.find('\\')
+        if tagend == -1:
+            tag, suffix = path, None
+        else:
+            tag, suffix = path[:tagend], path[tagend+1:]
+        try:
+            target = shortcuts[tag]
+        except KeyError:
+            # Bash will expand ~ (used as a shortcut) into the user's
+            # actual home directory. We still want to support '~' as a
+            # shortcut in Bash so try to determine if it is likely that
+            # the user typed it and act accordingly.
+            home = os.path.expanduser('~')
+            if path.startswith(home):
+                tag, suffix = '~', path[len(home)+1:]
+                target = shortcuts[tag]
+            else:
+                raise
+        if suffix:
+            target = os.path.join(target, os.path.normpath(suffix))
+    else:
+        target = None
+
+    if sys.platform.startswith("win"):
+        fbat = open(scriptName, 'w')
+        fbat.write('@echo off\n')
+        if target:
+            drive, tail = os.path.splitdrive(target)
+            fbat.write('@echo off\n')
+            if drive:
+                fbat.write('call %s\n' % drive)
+            fbat.write('call cd %s\n' % target)
+            fbat.write('title %s\n' % target)
+        fbat.close()
+    else:
+        fsh = open(scriptName, 'w')
+        fsh.write('#!/bin/sh\n')
+        if target:
+            fsh.write('cd %s\n' % target)
+        fsh.close()
+
+
+#---- mainline
+
+def main(argv):
+    try:
+        shellScript = os.environ[_gEnvVar]
+    except KeyError:
+        if sys.platform.startswith('win'):
+            sys.stderr.write("""\
+It appears that 'go' is not setup properly in your environment. 'go'
+should end up calling go.bat somewhere on your PATH and *not* go.py
+directly. Both go.bat and go.bat should be installed automatically by
+the setup.py script.
+""")
+        else:
+            sys.stderr.write("""\
+It appears that 'go' is not setup properly in your environment.  If you
+are using the Bash shell you should have the following function in your
+environment:
+
+    function go {
+        export GO_SHELL_SCRIPT=$HOME/.__tmp_go.sh
+        python `which go` $*
+        if [ -f $GO_SHELL_SCRIPT ] ; then
+            source $GO_SHELL_SCRIPT
+        fi
+    }
+
+You should add the above function to your ~/.bashrc file or just cut and
+paste the function into your current shell.
+""")
+        return 1
+    generateShellScript(shellScript) # no-op, overwrite old one
+
+    try:
+        optlist, args = getopt.getopt(argv[1:], 'hVs:a:d:l',
+            ['help', 'version', 'set=', 'add-current=', 'delete=', 'list'])
+    except getopt.GetoptError, ex:
+        msg = ex.msg
+        if ex.opt in ('d', 'dump'):
+            msg += ": old -d|--dump option is now -l|--list"
+        sys.stderr.write("go: error: %s.\n" % msg)
+        sys.stderr.write("See 'go --help'.\n")
+
+        return 1
+    for opt, optarg in optlist:
+        if opt in ('-h', '--help'):
+            sys.stdout.write(__doc__)
+            return 0
+        if opt in ('-V', '--version'):
+            sys.stdout.write("Go %s\n" % '.'.join([str(i) for i in _version_]))
+            return 0
+        elif opt in ('-s', '--set'):
+            try:
+                name, value = optarg.split(':',1)
+            except ValueError:
+                sys.stderr.write("go: error: incorrect 'set' syntax: '%s'\n"\
+                                 % optarg)
+                sys.stderr.write("See 'go --help'.\n")
+                return 1
+            return setShortcut(name, value)
+        elif opt in ('-a', '--add-current'):
+            return setShortcut(optarg, os.getcwd())
+        elif opt in ('-d', '--delete'):
+            return setShortcut(optarg, None)
+        elif opt in ('-l', '--list'):
+            pprint.pprint(getShortcuts())
+            return 0
+
+    if len(args) != 1:
+        sys.stderr.write("go: incorrect number of arguments (should be "\
+                         "exactly one): %s\n" % args)
+        sys.stderr.write("See 'go --help'.\n")
+        return 1
+    path = args[0]
+    try:
+        generateShellScript(shellScript, path)
+    except KeyError, ex:
+        sys.stderr.write("go: error: unrecognized shortcut: '%s'\n" % str(ex))
+        sys.stderr.write("See 'go --list'.\n")
+        return 1
+    else:
+        return 0
+        
+
+
+if __name__ == "__main__":
+    sys.exit( main(sys.argv) )
+
+
