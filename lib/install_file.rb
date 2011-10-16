@@ -82,7 +82,7 @@ class InstallFile
 
 
   def make_dest_dir
-    mkpath File.dirname( File.expand_path( @dest_file ) )
+    mkpath File.dirname( File.expand_path( @dest_file ) ), :verbose => true
   end
 
 

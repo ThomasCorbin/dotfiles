@@ -34,8 +34,9 @@ task :install do
 
   install_dir 'bin'
   # install_dir 'bin/bfuncs'
-  install_dir 'xemacs',     true
-  install_dir 'vim',        true
+  install_dir 'xemacs',             true
+  install_dir 'vim',                true
+  install_dir 'Sublime Text 2',     true
 end
 
 
