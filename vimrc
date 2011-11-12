@@ -1,12 +1,34 @@
-set nu!
-set tabstop=4
-set shiftwidth=4 
-set expandtab
-set hlsearch
-set tabstop=4
-set list
+" make current file's dir vim's current dir
+" file rooter.vim   vim-root, find .git dir to find root
+set autochdir
 
+" Insert spaces instead of tabs.
+set expandtab
+
+" highlight matches when searching
+set hlsearch
+
+" turn on incremental searching
+set incsearch
+set list
 set listchars=tab:▸\ ,eol:¬
+set nu!
+set shiftwidth=4
+" set syntax
+set tabstop=4
+
+autocmd BufWritePre *.pl :%s/\s\+$//e
+autocmd BufWritePre *.java :%s/\s\+$//e
+autocmd BufWritePre *.rb :%s/\s\+$//e
+
+
+
+highlight ExtraWhitespace ctermbg=red guibg=red
+au ColorScheme * highlight ExtraWhitespace guibg=red
+au BufEnter * match ExtraWhitespace /\s\+$/
+au InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+au InsertLeave * match ExtraWhiteSpace /\s\+$/
+
 
 
 "

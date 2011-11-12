@@ -1,5 +1,5 @@
 " ~/.vim/sessions/restart.vim: Vim session script.
-" Created by session.vim 1.4.20 on 15 October 2011 at 13:17:59.
+" Created by session.vim 1.4.20 on 22 October 2011 at 16:08:08.
 " Open this file in Vim and run :source % to restore your session.
 
 set guioptions=aegimrLtT
@@ -23,11 +23,9 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +1 ~/.vimrc
-badd +1 /tmp/vimr
-badd +1 /tmp/vimrc
+badd +0 ~/.vimrc
 silent! argdel *
-set lines=37 columns=129
+set lines=40 columns=129
 edit ~/.vimrc
 set splitbelow splitright
 set nosplitbelow
@@ -44,29 +42,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 11 - ((10 * winheight(0) + 18) / 36)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-11
-normal! 0
-tabedit /tmp/vimrc
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winheight=1 winwidth=1
-argglobal
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 18) / 36)
+let s:l = 1 - ((0 * winheight(0) + 19) / 39)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
