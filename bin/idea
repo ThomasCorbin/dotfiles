@@ -2,10 +2,10 @@
 
 # export AWT_TOOLKIT=MToolkit
  
-export JAVA_HOME=~/misc/jdk1.6.0
-export JDK_HOME=$JAVA_HOME
+#export JAVA_HOME=~/misc/jdk1.6.0
+#export JDK_HOME=$JAVA_HOME
  
-export IDEA_HOME=~/misc/idea
+#export IDEA_HOME=~/misc/idea
 #~/misc/idea/bin/idea.sh
  
 export IDEA_VM_OPTIONS="$IDEA_HOME/bin/idea.vmoptions"

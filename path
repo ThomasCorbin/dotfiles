@@ -20,6 +20,7 @@ logit         = false
 home          = ENV['HOME']
 java_home     = ENV['JAVA_HOME']
 javafx_home   = ENV['JAVAFX_HOME']
+idea_home     = ENV['IDEA_HOME']
 groovy_home   = ENV['GROOVY_HOME']
 gradle_home   = ENV['GRADLE_HOME']
 ant_home      = ENV['ANT_HOME']
@@ -38,6 +39,7 @@ end
 path = <<-EOS
   #{java_home}/bin
   #{javafx_home}/bin
+  #{idea_home}/bin
   #{ant_home}/bin
   #{home}/bin
   #{groovy_home}/bin

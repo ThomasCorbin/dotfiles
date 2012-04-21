@@ -139,6 +139,7 @@ JAVA_HOME=~/dev/tools/jdk1.7.0
 JAVAFX_HOME=~/dev/tools/javafx-sdk2.1.0-beta
 export JAVA_HOME
 export IDEA_JDK=$JAVA_HOME
+export IDEA_HOME=~/dev/tools/idea
 export RUBYMINE_JDK=$JAVA_HOME
 export PATH
 # PATH=$(echo $PATH | sed -e 's/::/:/g')
