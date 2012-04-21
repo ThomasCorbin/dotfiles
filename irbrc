@@ -74,35 +74,8 @@ end
 #  >lp "foo"
 try_require 'looksee'
 
-try_require 'lolize/auto'
+# try_require 'lolize/auto'
 
-
-# def less
-#   require 'stringio'
-#   $stdout, sout = StringIO.new, $stdout
-#   yield
-#   $stdout, str_io = sout, $stdout
-#    IO.popen('less', 'w') do |f|
-#      f.write str_io.string
-#      f.flush
-#      f.close_write
-#    end
-# end
-
-def ls( dir = '.' )
-  system( "ls -CF #{dir}" )
-  # `ls -CF #{dir}`
-end
-
-
-def cd( dir = Dir.home )
-  Dir.chdir dir
-end
-
-
-def pwd
-  puts Dir.pwd
-end
 
 
 class Object
@@ -148,4 +121,67 @@ puts "is rails console? #{rails?}"
 
 # logging into console by default
 #enable_logger
+
+def ep
+  IRB.CurrentContext.workspace.evaluate(self, paste)
+end
+
+# http://gist.github.com/124272
+# Thanks to Bjørn Arild Mæland
+def copy(str)
+  IO.popen('xclip -i', 'w') { |f| f << str.to_s }
+end
+
+def paste
+  `xclip -o`
+end
+
+# http://www.themomorohoax.com/2009/03/27/irb-tip-load-files-faster
+def fl(file_name)
+   file_name += '.rb' unless file_name =~ /\.rb/
+   @@recent = file_name
+   load "#{file_name}"
+end
+
+def rl
+  fl(@@recent)
+end
+
+# More than one way to do this
+# Commented is the ruby way
+# uncommentted is my preferred way
+# def ls( dir = '.' )
+def ls( dir = '__FILE__' )
+  # entries = instance_eval("Dir.entries(File.dirname(__FILE__))")
+  entries = instance_eval("Dir.entries(File.dirname(__FILE__))")
+  (entries - ["..", "."]).sort
+  # %x{ls}.split("\n")
+end
+
+# def less
+#   require 'stringio'
+#   $stdout, sout = StringIO.new, $stdout
+#   yield
+#   $stdout, str_io = sout, $stdout
+#    IO.popen('less', 'w') do |f|
+#      f.write str_io.string
+#      f.flush
+#      f.close_write
+#    end
+# end
+
+# def ls( dir = '.' )
+#   system( "ls -CF #{dir}" )
+#   # `ls -CF #{dir}`
+# end
+
+
+def cd( dir = Dir.home )
+  Dir.chdir dir
+end
+
+
+def pwd
+  puts Dir.pwd
+end
 

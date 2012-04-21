@@ -91,10 +91,10 @@ export PGUSER=$USER
 #export ANT_HOME=$S6_NRG_DEV_DIR/ant
 export CATALINA_HOME=/var/lib/tomcat6
 export TOMCAT_LOGS=/var/log/tomcat6
-export GROOVY_HOME=/home/$USER/dev/vendor/installed/groovy
-export GRADLE_HOME=/home/$USER/dev/vendor/installed/gradle
-export VENDOR_HOME=/home/$USER/dev/vendor
-export GRAILS_HOME=/home/$USER/dev/vendor/installed/grails
+export GROOVY_HOME=/home/$USER/dev/work/vendor/installed/groovy
+export GRADLE_HOME=/home/$USER/dev/work/vendor/installed/gradle
+export VENDOR_HOME=/home/$USER/dev/work/vendor
+export GRAILS_HOME=/home/$USER/dev/work/vendor/installed/grails
 
 
 #----------------------------------------
@@ -135,12 +135,15 @@ MAIL=/var/spool/mail/tc
 MH_HOME=/usr/bin/mh
 
 JAVA_HOME=~/misc/jdk1.6.0
+JAVA_HOME=~/dev/tools/jdk1.7.0
+JAVAFX_HOME=~/dev/tools/javafx-sdk2.1.0-beta
 export JAVA_HOME
 export IDEA_JDK=$JAVA_HOME
 export RUBYMINE_JDK=$JAVA_HOME
 export PATH
 # PATH=$(echo $PATH | sed -e 's/::/:/g')
 PATH=$(ruby ~/.path)
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 
 

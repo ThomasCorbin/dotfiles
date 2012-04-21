@@ -13,9 +13,9 @@ set incsearch
 set list
 set listchars=tab:▸\ ,eol:¬
 set nu!
-set shiftwidth=4
+set shiftwidth=2
 " set syntax
-set tabstop=4
+set tabstop=2
 
 autocmd BufWritePre *.pl :%s/\s\+$//e
 autocmd BufWritePre *.java :%s/\s\+$//e
@@ -40,7 +40,8 @@ let g:liquidcarbon_high_contrast = 1
 " let g:molokai_original = 0
 set t_Co=256
 
-colorscheme molokai
+" colorscheme molokai
+colorscheme vibrantink
 
 if has("gui_running")
 " set default size: 90x35
@@ -54,6 +55,7 @@ endif
 if has("win32") || has("win64")
     set gfn=Consolas:h12:cANSI
 endif
+set gfn=Liberation\ Mono\ 14
 
 
 
@@ -95,3 +97,5 @@ endif " has("autocmd")
 " For Haml
 " au! BufRead,BufNewFile *.haml         setfiletype haml
 
+" Disable all blinking
+:set guicursor+=a:blinkon0
