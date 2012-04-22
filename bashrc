@@ -141,10 +141,10 @@ export JAVA_HOME
 export IDEA_JDK=$JAVA_HOME
 export IDEA_HOME=~/dev/tools/idea
 export RUBYMINE_JDK=$JAVA_HOME
+export RUBYMINE_HOME=~/dev/tools/RubyMine
 export PATH
 # PATH=$(echo $PATH | sed -e 's/::/:/g')
 PATH=$(ruby ~/.path)
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
 
 
 

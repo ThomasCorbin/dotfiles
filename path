@@ -16,16 +16,17 @@ def remove_system_bins( path )
 end
 
 
-logit         = false
-home          = ENV['HOME']
-java_home     = ENV['JAVA_HOME']
-javafx_home   = ENV['JAVAFX_HOME']
-idea_home     = ENV['IDEA_HOME']
-groovy_home   = ENV['GROOVY_HOME']
-gradle_home   = ENV['GRADLE_HOME']
-ant_home      = ENV['ANT_HOME']
-local         = '/usr/local'
-misc          = "#{home}/misc"
+logit           = false
+ant_home        = ENV['ANT_HOME']
+home            = ENV['HOME']
+gradle_home     = ENV['GRADLE_HOME']
+groovy_home     = ENV['GROOVY_HOME']
+idea_home       = ENV['IDEA_HOME']
+java_home       = ENV['JAVA_HOME']
+javafx_home     = ENV['JAVAFX_HOME']
+ruby_mine_home  = ENV['RUBYMINE_HOME']
+local           = '/usr/local'
+misc            = "#{home}/misc"
 
 # $X11/bin
 # $HOST_PATH
@@ -44,6 +45,7 @@ path = <<-EOS
   #{home}/bin
   #{groovy_home}/bin
   #{gradle_home}/bin
+  #{ruby_mine_home}/bin
   /usr/local/pgsql/bin
   /etc
   #{local}/bin
