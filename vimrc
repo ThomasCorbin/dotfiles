@@ -12,7 +12,7 @@ set hlsearch
 set incsearch
 set list
 set listchars=tab:▸\ ,eol:¬
-set nu!
+set nu
 set shiftwidth=2
 " set syntax
 set tabstop=2
