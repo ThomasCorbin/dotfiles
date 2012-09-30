@@ -170,7 +170,7 @@ colorscheme vibrantink
 
 if has("gui_running")
 " set default size: 90x35
-    set columns=129
+    set columns=120
     set lines=40
     let g:obviousModeInsertHi = "guibg=Black guifg=White"
 else
@@ -180,7 +180,7 @@ endif
 if has("win32") || has("win64")
     set gfn=Consolas:h12:cANSI
 endif
-set gfn=Liberation\ Mono\ 14
+set gfn=Mensch\ for\ Powerline\ 16
 
 
 
