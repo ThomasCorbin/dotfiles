@@ -136,12 +136,14 @@ MH_HOME=/usr/bin/mh
 
 JAVA_HOME=~/misc/jdk1.6.0
 JAVA_HOME=~/dev/tools/jdk1.7.0
-JAVAFX_HOME=~/dev/tools/javafx-sdk2.1.0-beta
+JAVAFX_HOME=~/dev/tools/jdk1.7.0/jre/lib
 export JAVA_HOME
+export JAVAFX_HOME
 export IDEA_JDK=$JAVA_HOME
 export IDEA_HOME=~/dev/tools/idea
 export RUBYMINE_JDK=$JAVA_HOME
 export RUBYMINE_HOME=~/dev/tools/RubyMine
+export JRUBY_OPTS=--1.9
 export PATH
 # PATH=$(echo $PATH | sed -e 's/::/:/g')
 PATH=$(ruby ~/.path)
