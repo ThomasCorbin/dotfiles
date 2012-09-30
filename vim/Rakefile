@@ -1,0 +1,107 @@
+task :default do
+  plugins.each_pair { |key, value| clone key, value}
+end
+
+task :list do
+  puts "Plugins installed in ~/.vim/bundle"
+  installed_plugins.each { |plugin| puts plugin }
+end
+
+task :update, [:name] do |t, args|
+  update(args.name)
+end
+
+task :destroy, [:name] do |t, args|
+  delete_plugin(args.name)
+end
+
+
+def plugins
+  {
+    "NERDTree"        => "https://github.com/scrooloose/nerdtree.git",
+    "NERD-Commenter"  => "https://github.com/vim-scripts/The-NERD-Commenter.git",
+    "Powerline"       => "https://github.com/Lokaltog/vim-powerline.git",
+    "Tabular"         => "https://github.com/godlygeek/tabular.git",
+    "EasyMotion"      => "https://github.com/vim-scripts/EasyMotion",
+#    "L9"              => "https://github.com/vim-scripts/L9.git",
+#    "Ack"             => "https://github.com/mileszs/ack.vim.git",
+#    "Rails"           => "https://github.com/tpope/vim-rails.git",
+    "Ruby"            => "https://github.com/vim-ruby/vim-ruby.git",
+#    "Gist"            => "https://github.com/mattn/gist-vim.git",
+#    "TaskPaper"       => "https://github.com/davidoc/taskpaper.vim.git",
+#    "VimWiki"         => "https://github.com/vim-scripts/vimwiki.git",
+#    "Endwise"         => "https://github.com/tpope/vim-endwise.git",
+    "SuperTab"        => "https://github.com/ervandew/supertab",
+#    "Ruby-Doc"        => "https://github.com/lucapette/vim-ruby-doc.git",
+#    "BClose"          => "https://github.com/rbgrouleff/bclose.vim.git",
+#    "BetterSnipMate"  => "https://github.com/bartekd/better-snipmate-snippets.git",
+    "Surround"        => "https://github.com/tpope/vim-surround",
+    "Commentary"      => "https://github.com/tpope/vim-commentary",
+    "Repeat"          => "https://github.com/tpope/vim-repeat",
+
+    # Syntax Plugins
+#    "Markdown"        => "https://github.com/tpope/vim-markdown.git",
+#    "JSON"            => "https://github.com/leshill/vim-json.git",
+#    "HAML"            => "https://github.com/tpope/vim-haml.git",
+#    "CoffeeScript"    => "https://github.com/kchmck/vim-coffee-script.git",
+#    "Javascript"      => "https://github.com/pangloss/vim-javascript.git",
+#    "Eruby"           => "https://github.com/vim-scripts/eruby.vim.git",
+#    "Less"            => "https://github.com/groenewege/vim-less.git",
+
+    # Colors
+    "Solarized"       => "https://github.com/altercation/vim-colors-solarized.git",
+    "Squil-Colors"    => "https://github.com/squil/vim_colors.git",
+    "Molokai"         => "https://github.com/tomasr/molokai.git",
+    "VividChalk"      => "https://github.com/tpope/vim-vividchalk.git",
+  }
+end
+
+
+
+def clone(name, url)
+  if File.exists?("bundle/#{name}")
+    puts "[Exists] #{name}"
+  else
+    puts "[Installing] #{name}"
+    system("git clone #{url} bundle/#{name}")
+    puts "[Installed] #{name}"
+  end
+end
+
+def update(name)
+  if plugin_installed?(name) && plugin_in_plugins?(name)
+    delete_plugin(name)
+    clone(name, plugins.values_at(name)[0])
+  end
+end
+
+def installed_plugins
+  Dir.foreach("bundle").drop(2)
+end
+
+def plugin_installed?(name)
+  if installed_plugins.include? name
+    return true
+  else
+    puts "Plugin not found in bundle direcotry"
+    return false
+  end
+end
+
+def plugin_in_plugins?(name)
+  if plugins.include? name
+    return true
+  else
+    puts "Plugin not in hash of plugins"
+    return false
+  end
+end
+
+def delete_plugin(name)
+  if plugin_installed?(name)
+    puts "[Removing] #{name}"
+    FileUtils.rm_rf("bundle/#{name}")
+    puts "[Removed] #{name}"
+  end
+end
+
