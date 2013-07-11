@@ -1,7 +1,8 @@
 # .bashrc
 
 # User specific aliases and functions
-source /etc/bash_completion.d/git
+#source /etc/bash_completion.d/git
+source /etc/bash_completion
 
 #----------------------------------------
 #    Skip loading functions and aliases if not an interactive shell
@@ -11,12 +12,13 @@ PATH=$HOME/bin:/usr/bin:/bin:/etc
 export HOST=$(hostname)
 export USER=$(whoami)
 
+[ -z "$PS1" ] && return
 
 [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-rvm list
-which ruby
+#rvm list
+#which ruby
 
-[[ -s "$HOME/.lightning/functions.sh" ]] && source "$HOME/.lightning/functions.sh"
+#[[ -s "$HOME/.lightning/functions.sh" ]] && source "$HOME/.lightning/functions.sh"
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
@@ -30,11 +32,6 @@ fi
 #export LOCATE_PATH=/usr/local/lib/locatedb
 
 
-#----------------------------------------
-#    Mono related paths
-#----------------------------------------
-# export MONO_PATH=~/misc/mono/lib
-# export PKG_CONFIG_PATH=/usr/lib/pkgconfig:/opt/gnome/lib/pkgconfig:/usr/local/lib/pkgconfig
 
 
 if [ "$PS1" != "" ]; then
@@ -88,13 +85,12 @@ export PGDATABASE=nrgdb
 export PGHOST=localhost
 export PGUSER=$USER
 
-#export ANT_HOME=$S6_NRG_DEV_DIR/ant
+export ANT_HOME=~/dev/tools/apache-ant
+export NODE_HOME=~/dev/tools/node
 export CATALINA_HOME=/var/lib/tomcat6
 export TOMCAT_LOGS=/var/log/tomcat6
-export GROOVY_HOME=/home/$USER/dev/work/vendor/installed/groovy
-export GRADLE_HOME=/home/$USER/dev/work/vendor/installed/gradle
-export VENDOR_HOME=/home/$USER/dev/work/vendor
-export GRAILS_HOME=/home/$USER/dev/work/vendor/installed/grails
+export GROOVY_HOME=/home/$USER/dev/tools/groovy
+export GRADLE_HOME=/home/$USER/dev/tools/gradle
 
 
 #----------------------------------------
@@ -162,7 +158,7 @@ export XEDITOR=emacs
 export HISTSIZE=1500
 export HISTTIMEFORMAT="%F %T "
 export HISTIGNORE="&:ls:cd:[bf]g:exit"
-export HISTFILE="$HOME/.bash_history_"$(tty| groovy -ne "println line.replace( '/dev/pts/', '')")
+#export HISTFILE="$HOME/.bash_history_"$(tty| groovy -ne "println line.replace( '/dev/pts/', '')")
 export FIGNORE=".o:~"
 export PWD
 export PAGER=less
@@ -191,3 +187,6 @@ echo "setting up rvm scripts"
 
 #set 'export rvm_pretty_print_flag=1'
 export rvm_pretty_print_flag=1
+
+#THIS MUST BE AT THE END OF THE FILE FOR GVM TO WORK!!!
+[[ -s "/home/tc/.gvm/bin/gvm-init.sh" ]] && source "/home/tc/.gvm/bin/gvm-init.sh"

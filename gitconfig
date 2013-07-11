@@ -40,3 +40,5 @@
 	editor = vi
 [diff]
 	renamelimit = 400
+[push]
+	default = simple

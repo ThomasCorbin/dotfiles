@@ -13,6 +13,7 @@ rsync -vaz \
         --exclude=.thumbnails \
         --exclude=.kde/share/cache/ \
         --exclude=.kde/share/thumbnails/ \
+        --exclude=.cache/ \
         --exclude=misc/src/konstruct/ \
         --exclude=misc/crossover/support/dotwine/wineserver-laptop/socket \
         --update \
@@ -24,8 +25,11 @@ rsync -vaz \
         --group \
         --times \
         --recursive \
+        --rsh=/usr/bin/ssh \
         /home/tc \
-        /media/2a9e75ca-e164-462b-93e4-0dbfe568c1dd/home \
+        192.168.1.107:/home
+
+#        /media/2a9e75ca-e164-462b-93e4-0dbfe568c1dd/home \
 
 #        --rsh=/usr/bin/ssh \
 #        hal:/home

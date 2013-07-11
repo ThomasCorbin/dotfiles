@@ -2,12 +2,8 @@
 #echo "Loading .aliases"
 
 #alias emacs="emacs -no-init-file -l ~/.emacs.el"
-#alias gm="gm INCDIR=/usr/xerox/include LIBDIR=/usr/xerox/lib"
 
 #alias printot='printot ~/.timecard'
-#alias xv="xv -8"
-
-alias createS6db="createdb -D 'PGDATA2' -T template0"
 
 alias playdvd="mplayer -ao oss -vo sdl -dvd 1 -alang en -framedrop -subcc -double"
 
@@ -18,15 +14,15 @@ alias ascii='$PAGER /usr/pub/ascii'
 alias alert_helper='history|tail -n1|sed -e "s/^\s*[0-9]\+\s*//" -e "s/;\s*alert$//"'
 alias alert='notify-send -i /usr/share/icons/gnome/32x32/apps/gnome-terminal.png "[$?] $(alert_helper)"'
 
+#   http://askubuntu.com/questions/57292/nm-applets-vpn-menu-disappears
+alias vpn-reload="kill -1 `pidof nm-applet` && nm-applet &"
+alias vpn-reload="killall nm-applet && nm-applet --sm-disable&"
+
 #alias beep='echo -n '
 #alias dbeep='echo -n ;sleep 3;echo -n '
 alias beep='artsplay /opt/kde3/share/sounds/KDE_Beep_ShortBeep.wav'
 alias dbeep='beep;beep'
 alias bell='echo -n '
-alias checkStatus='cvs status 2>&1 | grep -i status | grep -v Up-to-date | grep -v "cvs server" | grep -v Repository'
-#alias ddts='csh -c ddts'
-#alias ddtsqa='csh -c ddtsqa'
-alias dostty='stty $(cat ~/.goodstty) '
 alias dir='ls -CFb --color=tty'
 #alias lcat='less $CATALINA_HOME/logs/catalina.out'
 alias lcat='less /var/log/tomcat6/catalina.out'
@@ -38,12 +34,9 @@ alias greek="$PAGER /usr/pub/greek"
 alias ipgrind='on ra ipgrind'
 alias ipotroff='on ra ipotroff'
 alias lss='ls -alxsig'
-#alias make='make CDEBUG=-g'
 alias more='less'
 alias myxinit="xinit -- /net/xyzzy/usr/X11R5/bin/Xsun"
 #alias pd=pushd
-alias penv='env | sort'
-#alias play=auplay
 alias plenv='env | sort | less'
 alias prsel='xselection PRIMARY > /tmp/sel.$$; mjp /tmp/sel.$$; rm /tmp/sel.$$'
 alias rehash='hash -r'
@@ -51,27 +44,8 @@ alias po=popd
 
 alias prettyp="a2ps -C --prologue=color --medium=Letterdj "
 
-
-#
-#    Logfile aliases.
-#
-alias clog='echo > $(config.val LOGFILE)'
-alias llog='${PAGER:=less} $(config.val LOGFILE)'
-alias tlog='tail -200 $(config.val LOGFILE) | grep -v INFO'
-alias tflog='tail -f $(config.val LOGFILE) | grep -v INFO'
-alias vlog='grep -v INFO $(config.val LOGFILE) | ${PAGER:=less}'
-#alias lconfig='${PAGER:=less} $(config.val DB_CONFIG)'
-#alias econfig='$EDITOR $(config.val DB_CONFIG)'
-
-
-
 #alias tback="/usr/5bin/touch -c 09070000"
 alias tback="/usr/5bin/touch -c 01010000"
-
-# csh alias
-#alias psg='ps -ax | grep \!* | grep -v grep'
-#alias h='history -r'
-#alias hl='history -r | less'
 
 #
 #    SysV aliases.
@@ -81,10 +55,6 @@ alias tback="/usr/5bin/touch -c 01010000"
 #alias w=whodo
 #alias s='cat error | grep -v Hills'
 #alias t='tail -15 error | grep -v Hills'
-
-
-alias sd='git diff > /tmp/diff.out;vi /tmp/diff.out'
-alias dcom='git svn dcommit 2>&1 | tee /tmp/dcommit.out'
 
 alias lg='lightning'
 alias sub='sublime_text'
