@@ -1,0 +1,4 @@
+#!/bin/bash
+
+~/dev/tools/Sub*/sublime_text "$@"
+
