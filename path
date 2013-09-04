@@ -17,8 +17,9 @@ end
 
 
 logit           = false
-ant_home        = ENV['ANT_HOME']
 home            = ENV['HOME']
+ant_home        = ENV['ANT_HOME']
+btrace_home     = ENV['BTRACE_HOME']
 gradle_home     = ENV['GRADLE_HOME']
 groovy_home     = ENV['GROOVY_HOME']
 node_home       = ENV['NODE_HOME']
@@ -53,6 +54,7 @@ path = <<-EOS
   #{local}/bin
   #{local}/sbin
   #{local}/kde/bin
+  #{btrace_home}/bin
   .
 EOS
 

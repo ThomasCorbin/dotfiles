@@ -22,6 +22,10 @@
      (if (file-readable-p "~/.xemacs/init.el")
         (load "~/.xemacs/init.el" nil t))
   )
+  (progn
+     (if (file-readable-p "~/.emacs.d/init.el")
+        (load "~/.emacs.d/init.el" nil t))
+  )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;; GNU-Emacs
   ;;; ---------

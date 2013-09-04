@@ -38,6 +38,7 @@
 	main-window-geometry = 1168x603+262+91
 [core]
 	editor = vi
+	autocrlf = input
 [diff]
 	renamelimit = 400
 [push]

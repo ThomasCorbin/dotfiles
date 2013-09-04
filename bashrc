@@ -86,6 +86,7 @@ export PGHOST=localhost
 export PGUSER=$USER
 
 export ANT_HOME=~/dev/tools/apache-ant
+export BTRACE_HOME=~/dev/tools/btrace
 export NODE_HOME=~/dev/tools/node
 export CATALINA_HOME=/var/lib/tomcat6
 export TOMCAT_LOGS=/var/log/tomcat6

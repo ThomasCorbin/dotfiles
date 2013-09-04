@@ -1,0 +1,177 @@
+#!/usr/bin/env groovy
+
+import java.util.jar.Attributes
+import java.util.jar.JarFile
+import groovy.io.FileType
+import static groovy.io.FileType.*
+import static groovy.io.FileVisitResult.*
+
+//import com.google.common.collect.ArrayListMultimap
+
+
+
+def missingFiles = findMissingSourceFilesForEachJarFile()
+println "Missing Files ${missingFiles.size()}\n========================"
+println missingFiles
+println ""
+
+def sourceFileLocations = findAllFilesInOriginalSourceTree()
+
+def missingFileLocations = getMissingFileLocations( missingFiles, sourceFileLocations )
+
+missingFileLocations.map.keySet().sort().each { k ->
+
+    println k
+
+    missingFileLocations.map.get(k).each { fileName ->
+        println "\t$fileName"
+    }
+}
+
+
+def getMissingFileLocations( missingFiles, sourceFileLocations ) {
+
+    def locations = [:] as GroovyMultiMap
+
+    missingFiles.each{ fileName ->
+
+        locations.put( sourceFileLocations.get( fileName, 'NotFound' ), fileName )
+    }
+
+    return locations
+}
+
+
+def findAllFilesInOriginalSourceTree() {
+
+    def files = [:]
+    def rootDir = new File('../VisualConnect')
+
+    rootDir.traverse(
+            type         : FILES,
+            nameFilter   : ~/.*\.java/,
+            preDir       : { if (it.name == '.git' || it.name == 'build') return SKIP_SUBTREE },
+            postRoot     : true ) { it ->
+
+        files[it.name] = dirName( it.path )
+    }
+
+    return files
+}
+
+
+def findMissingSourceFilesForEachJarFile() {
+    
+    def jarFileName  = 'vc/lib/gt3270.jar'
+    def files        = []
+    def rootDir      = new File('vc/lib')
+    def missingFiles = [] as Set
+
+    rootDir.traverse(
+            type         : FILES,
+            nameFilter   : ~/gt.*\.jar/,
+            postRoot     : true ) { it ->
+
+        println "Searching ${it.path}"
+        missingFiles << searchForMissingFilesInJarFile( it.path )
+    }
+
+    return missingFiles.flatten().sort()
+}
+
+
+def searchForMissingFilesInJarFile( jarFileName ) {
+
+    def jarFile = new JarFile(jarFileName)
+    def contents = extractJarContents(jarFile)
+
+    // contents = [ 'a' ]
+    // println contents
+
+    def filesInTree = findAllFilesInSourceTree()
+    def missingFiles = []
+    contents.each { fileName ->
+        if ( ! filesInTree.contains( fileName ) ) {
+            missingFiles << fileName
+        }
+    }
+
+    return missingFiles
+}
+
+
+def findAllFilesInSourceTree() {
+    def files = []
+    def rootDir = new File('.')
+    rootDir.traverse(
+            type         : FILES,
+            nameFilter   : ~/.*\.java/,
+            preDir       : { if (it.name == '.git' || it.name == 'build') return SKIP_SUBTREE },
+            postRoot     : true ) { it ->
+
+        files << baseName( it.name )
+    }
+
+    return files
+}
+
+
+def List<String> extractJarContents(JarFile jarFile) {
+
+    entries = jarFile.entries()
+    jarContents = entries.collect { entry -> entry.name.replace( ".class", '.java' ) }
+            .findAll { 
+                it.endsWith( 'java' ) \
+                    && ! it.contains( 'gtsoftx' ) \
+                    && ! it.contains( '$' ) \
+                    && ! it.startsWith( 'META' ) \
+                    && ! it.startsWith( 'crysec' ) \
+                    && ! it.startsWith( 'java' ) \
+                    && ! it.startsWith( 'org' ) \
+                    && ! it.startsWith( 'license' ) \
+                    && ! it.startsWith( 'net' ) \
+                    && ! it.startsWith( 'com/sun' ) \
+                    && ! it.startsWith( 'com/eteks' ) \
+                    && ! it.startsWith( 'com/incors' ) \
+                    && ! it.startsWith( 'com/ssh' ) \
+                    && ! it.startsWith( 'com/gefion' ) \
+                    && ! it.endsWith( 'gif' ) \
+                    && ! it.endsWith( 'html' ) \
+            }
+            .collect { baseName( it ) }
+
+    return jarContents
+}
+
+
+def dirName( String fileName ) {
+
+    if ( fileName.contains( '/' ) ) {
+      return fileName.substring( 0, fileName.lastIndexOf( '/' ) ) 
+    }
+
+    '.'
+}
+
+
+def baseName( String fileName ) {
+
+    if ( fileName.contains( '/' ) ) {
+        return fileName.substring( fileName.lastIndexOf( '/' ) + 1 ) 
+    }
+
+    fileName
+}
+
+
+
+//      jarContents.put(entry.name, new JarCharacteristics(entry.name, entry.crc, entry.size, entry.time));
+class GroovyMultiMap {
+    Map map = [:]
+
+    public boolean put(Object key, Object value) {
+        List list = map.get(key, [])
+        list.add(value)
+        map."$key" = list
+    }
+}
