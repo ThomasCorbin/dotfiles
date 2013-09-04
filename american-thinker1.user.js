@@ -14,6 +14,12 @@
 // @include        http://*.forbes.com/*
 // @include        http://powerlineblog.com/*
 // @include        http://*.powerlineblog.com/*
+// @include        http://commentarymagazine.com/*
+// @include        http://*.commentarymagazine.com/*
+// @include        http://ricochet.com/*
+// @include        http://*.ricochet.com/*
+// @include        http://nationalreview.com/*
+// @include        http://*.nationalreview.com/*
 // @version        1.0
 // ==/UserScript==
 
